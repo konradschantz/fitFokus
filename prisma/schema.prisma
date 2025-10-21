@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String?   @unique
+  createdAt DateTime  @default(now())
+  workouts  Workout[]
+  cardio    CardioSession[]
+  settings  UserSettings?
+}
+
+model UserSettings {
+  id               String  @id @default(cuid())
+  userId           String  @unique
+  goal             String?
+  daysPerWeek      Int?
+  equipmentProfile String?
+  lastPlanType     String?
+  User             User    @relation(fields: [userId], references: [id])
+}
+
+model Exercise {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  category      String
+  equipment     String?
+  primaryMuscle String?
+  metric        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  sets          Set[]
+  cardio        CardioSession[]
+}
+
+model Workout {
+  id       String   @id @default(cuid())
+  userId   String
+  date     DateTime @default(now())
+  planType String
+  note     String?
+  sets     Set[]
+  User     User     @relation(fields: [userId], references: [id])
+}
+
+model Set {
+  id         String   @id @default(cuid())
+  workoutId  String
+  exerciseId String
+  orderIndex Int
+  weightKg   Float?
+  reps       Int?
+  rpe        Float?
+  completed  Boolean  @default(false)
+  notes      String?
+  Exercise   Exercise @relation(fields: [exerciseId], references: [id])
+  Workout    Workout  @relation(fields: [workoutId], references: [id])
+
+  @@unique([workoutId, orderIndex])
+}
+
+model CardioSession {
+  id           String   @id @default(cuid())
+  userId       String
+  date         DateTime @default(now())
+  exerciseId   String
+  durationMin  Int
+  distanceM    Int?
+  intensity    Int
+  avgHeartRate Int?
+  notes        String?
+  Exercise     Exercise @relation(fields: [exerciseId], references: [id])
+  User         User     @relation(fields: [userId], references: [id])
+}
