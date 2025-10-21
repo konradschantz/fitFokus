@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
     const [workouts, sets, cardio] = await Promise.all([
       prisma.workout.findMany({ where: { userId }, orderBy: { date: 'desc' } }),
-      prisma.set.findMany({ where: { workout: { userId } }, include: { Exercise: true, Workout: true } }),
+      prisma.set.findMany({ where: { Workout: { userId } }, include: { Exercise: true, Workout: true } }),
       prisma.cardioSession.findMany({ where: { userId }, include: { Exercise: true }, orderBy: { date: 'desc' } }),
     ]);
 
