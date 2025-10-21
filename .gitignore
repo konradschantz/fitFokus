@@ -35,3 +35,6 @@ prisma/generated/
 
 # Misc
 coverage/
+package-lock.json
+tsconfig.json
+tsconfig.json
