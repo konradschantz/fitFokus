@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getOrCreateUserId } from '@/lib/auth';
 import { getProgress } from '@/lib/progress';
@@ -12,3 +13,4 @@ export async function GET() {
     return NextResponse.json({ message: 'Kunne ikke hente progression' }, { status: 500 });
   }
 }
+ 

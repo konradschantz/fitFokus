@@ -16,7 +16,7 @@ export function CardioLogger({ defaultDuration, defaultIntensity }: { defaultDur
   const { push } = useToast();
 
   const handleSubmit = async () => {
-    if (!duration || duration <= 0) {
+    if (duration == null || duration <= 0) {
       push({ title: 'Varighed mangler', description: 'Sæt varighed i minutter.' });
       return;
     }
@@ -31,7 +31,7 @@ export function CardioLogger({ defaultDuration, defaultIntensity }: { defaultDur
         const data = await response.json();
         throw new Error(data.message ?? 'Ukendt fejl');
       }
-      push({ title: 'Cardio logget', description: `${duration} min – intensitet ${intensity}` });
+      push({ title: 'Cardio logget', description: `${duration} min på intensitet ${intensity}` });
       setNotes('');
     } catch (error) {
       push({ title: 'Fejl', description: error instanceof Error ? error.message : 'Kunne ikke logge cardio.' });
@@ -44,7 +44,7 @@ export function CardioLogger({ defaultDuration, defaultIntensity }: { defaultDur
     <div className="space-y-6">
       <div className="space-y-2">
         <p className="text-sm font-semibold">Varighed (minutter)</p>
-        <NumberStepInput value={duration} onChange={setDuration} step={5} min={5} inputProps={{ 'data-set-input': 'true', name: 'duration' }} />
+        <NumberStepInput value={duration} onChange={(v) => setDuration(v)} step={5} min={5} inputProps={{ 'data-set-input': 'true', name: 'duration' }} />
       </div>
       <div className="space-y-2">
         <p className="text-sm font-semibold">Intensitet (1-10)</p>
@@ -52,7 +52,7 @@ export function CardioLogger({ defaultDuration, defaultIntensity }: { defaultDur
       </div>
       <div className="space-y-2">
         <p className="text-sm font-semibold">Distance (meter, valgfri)</p>
-        <NumberStepInput value={distance} onChange={setDistance} step={100} min={0} inputProps={{ 'data-set-input': 'true', name: 'distance' }} />
+        <NumberStepInput value={distance} onChange={(v) => setDistance(v)} step={100} min={0} inputProps={{ 'data-set-input': 'true', name: 'distance' }} />
       </div>
       <div className="space-y-2">
         <p className="text-sm font-semibold">Noter</p>

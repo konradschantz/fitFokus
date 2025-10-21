@@ -13,7 +13,7 @@ type NumberStepInputProps = {
   max?: number;
   placeholder?: string;
   className?: string;
-  inputProps?: InputHTMLAttributes<HTMLInputElement>;
+  inputProps?: InputHTMLAttributes<HTMLInputElement> & { [key: string]: any };
 };
 
 export function NumberStepInput({ value, onChange, step = 1, min, max, placeholder, className, inputProps }: NumberStepInputProps) {
@@ -36,7 +36,7 @@ export function NumberStepInput({ value, onChange, step = 1, min, max, placehold
         onClick={() => update(-step)}
         aria-label="minus"
       >
-        −
+        -
       </Button>
       <Input
         value={value ?? ''}

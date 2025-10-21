@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
@@ -44,7 +45,7 @@ export async function DELETE() {
   try {
     const userId = getOrCreateUserId();
     await prisma.$transaction([
-      prisma.set.deleteMany({ where: { workout: { userId } } }),
+      prisma.set.deleteMany({ where: { Workout: { userId } } }),
       prisma.workout.deleteMany({ where: { userId } }),
       prisma.cardioSession.deleteMany({ where: { userId } }),
       prisma.userSettings.deleteMany({ where: { userId } }),
@@ -55,3 +56,4 @@ export async function DELETE() {
     return NextResponse.json({ message: 'Kunne ikke slette data' }, { status: 500 });
   }
 }
+ 

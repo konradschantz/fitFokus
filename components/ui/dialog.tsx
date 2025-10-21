@@ -61,7 +61,7 @@ export function DialogCloseButton({ label = 'Luk' }: { label?: string }) {
       type="button"
       onClick={() => {
         const dialog = document.querySelector('dialog[open]');
-        dialog?.close();
+        if (dialog instanceof HTMLDialogElement) dialog.close();
       }}
       className={cn(
         'inline-flex h-10 items-center justify-center rounded-md border border-muted px-4 text-sm font-medium text-foreground hover:bg-muted'

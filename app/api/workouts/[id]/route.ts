@@ -27,3 +27,4 @@ export async function GET(_request: Request, { params }: { params: { id: string 
     return NextResponse.json({ message: 'Kunne ikke hente workout' }, { status: 500 });
   }
 }
+export const dynamic = 'force-dynamic';

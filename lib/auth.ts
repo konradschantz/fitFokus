@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { randomUUID } from 'crypto';
 
 const COOKIE_KEY = 'fitfokus_user';
@@ -16,17 +16,16 @@ export function getOrCreateUserId(): string {
       const parsed = JSON.parse(existing.value) as UserCookie;
       if (parsed.id) return parsed.id;
     } catch (error) {
-      console.warn('Invalid user cookie, regenerating', error);
+      console.warn('Invalid user cookie, will try header fallback', error);
     }
   }
-  const id = randomUUID();
-  cookieStore.set({
-    name: COOKIE_KEY,
-    value: JSON.stringify({ id }),
-    maxAge: ONE_YEAR,
-    httpOnly: true,
-    sameSite: 'lax',
-    path: '/',
-  });
-  return id;
+
+  // Middleware passes the generated id via a request header on first visit
+  const hdrs = headers();
+  const headerId = hdrs.get('x-fitfokus-user');
+  if (headerId) return headerId;
+
+  // Last resort: generate an ephemeral id (no cookie write here)
+  // Route handlers can still persist if needed, but pages will just use this temporarily.
+  return randomUUID();
 }

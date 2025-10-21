@@ -76,14 +76,15 @@ type SetHistory = {
 
 async function getLastSetHistories(userId: string, exerciseId: string, limit: number): Promise<SetHistory[]> {
   const sets = await prisma.set.findMany({
-    where: { exerciseId, workout: { userId } },
-    orderBy: [{ workout: { date: 'desc' } }, { orderIndex: 'asc' }],
+    where: { exerciseId, Workout: { userId } },
+    orderBy: [{ Workout: { date: 'desc' } }, { orderIndex: 'asc' }],
     take: limit * 3,
-    select: { weightKg: true, reps: true, rpe: true, workoutId: true, workout: { select: { date: true } } },
+    select: { weightKg: true, reps: true, rpe: true, workoutId: true, Workout: { select: { date: true } } },
   });
   const grouped = new Map<string, { weight: number | null; reps: number[]; rpe: (number | null)[] }>();
   for (const set of sets) {
-    const existing = grouped.get(set.workoutId) ?? { weight: set.weightKg ?? null, reps: [] as number[], rpe: [] as (number | null)[] };
+    const existing =
+      grouped.get(set.workoutId) ?? { weight: set.weightKg ?? null, reps: [] as number[], rpe: [] as (number | null)[] };
     if (typeof set.reps === 'number') {
       existing.reps.push(set.reps);
     }
@@ -127,17 +128,18 @@ function computeSuggestedWeight(name: string, histories: SetHistory[]) {
 export async function suggestNextWorkout(userId: string): Promise<WorkoutDraft> {
   const settings = await prisma.userSettings.findUnique({ where: { userId } });
   const planPreference = settings?.lastPlanType;
-  let planGroup: keyof typeof templates = 'full_body';
+  let planGroup: 'full_body' | 'upper_lower' | 'push_pull_legs' = 'full_body';
   if (settings?.daysPerWeek) {
     if (settings.daysPerWeek <= 2) planGroup = 'full_body';
     else if (settings.daysPerWeek <= 4) planGroup = 'upper_lower';
     else planGroup = 'push_pull_legs';
   }
-  if (planPreference && planPreference in templates) {
-    planGroup = planPreference as keyof typeof templates;
-  }
-  const planType = await determineNextPlanType(userId, planGroup);
-  const exercises = templates[planType] ?? templates.full_body;
+  const planType =
+    planPreference && planPreference in templates
+      ? (planPreference as keyof typeof templates)
+      : await determineNextPlanType(userId, planGroup);
+  const computedPlanType = planType as keyof typeof templates;
+  const exercises = templates[computedPlanType] ?? templates.full_body;
   const resolved = await Promise.all(
     exercises.map(async (exerciseName, index) => {
       const exercise = await fetchExerciseByName(exerciseName);

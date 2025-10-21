@@ -27,8 +27,8 @@ function epley1RM(weight: number, reps: number) {
 export async function getProgress(userId: string): Promise<ProgressResponse> {
   const [sets, workouts, exercises] = await Promise.all([
     prisma.set.findMany({
-      where: { workout: { userId } },
-      select: { weightKg: true, reps: true, workout: { select: { date: true } }, exerciseId: true },
+      where: { Workout: { userId } },
+      select: { weightKg: true, reps: true, Workout: { select: { date: true } }, exerciseId: true },
     }),
     prisma.workout.findMany({
       where: { userId },
@@ -46,7 +46,7 @@ export async function getProgress(userId: string): Promise<ProgressResponse> {
     const reps = set.reps ?? 0;
     const volume = weight * reps;
     if (volume <= 0) continue;
-    const week = startOfWeek(set.workout.date, { weekStartsOn: 1 }).toISOString().slice(0, 10);
+    const week = startOfWeek(set.Workout.date, { weekStartsOn: 1 }).toISOString().slice(0, 10);
     volumeByWeek.set(week, (volumeByWeek.get(week) ?? 0) + volume);
   }
 
@@ -63,7 +63,7 @@ export async function getProgress(userId: string): Promise<ProgressResponse> {
     const estimate = epley1RM(weight, reps);
     const trend = liftTrends.find((entry) => entry.lift === liftName);
     if (!trend) continue;
-    trend.points.push({ date: set.workout.date.toISOString(), value: Math.round(estimate * 10) / 10 });
+    trend.points.push({ date: set.Workout.date.toISOString(), value: Math.round(estimate * 10) / 10 });
   }
 
   for (const trend of liftTrends) {

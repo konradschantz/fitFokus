@@ -48,8 +48,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 type="button"
                 onClick={() => dismiss(toast.id)}
                 className={cn('text-sm text-muted-foreground hover:text-foreground')}
+                aria-label="Luk"
               >
-                ×
+                x
               </button>
             </div>
           </div>
@@ -64,3 +65,4 @@ export function useToast() {
   if (!ctx) throw new Error('useToast must be used inside ToastProvider');
   return ctx;
 }
+

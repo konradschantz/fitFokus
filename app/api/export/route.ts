@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
@@ -84,3 +85,4 @@ export async function GET(request: Request) {
     return NextResponse.json({ message: 'Kunne ikke eksportere data' }, { status: 500 });
   }
 }
+ 
