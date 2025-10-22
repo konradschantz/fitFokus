@@ -1,9 +1,9 @@
 import { getServerSession } from "next-auth";
-import { authConfig } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/auth";
 import { db } from "@/lib/db";
 
 export default async function Dashboard() {
-  const session = await getServerSession(authConfig);
+  const session = await getServerSession(authOptions);
   if (!session?.user?.id) return null;
 
   const user = await db.user.findUnique({
