@@ -1,19 +1,19 @@
-datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")                
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 model User {
-  id        String    @id @default(cuid())
-  email     String?   @unique
-  createdAt DateTime  @default(now())
-  workouts  Workout[]
+  id        String          @id @default(cuid())
+  email     String?         @unique
+  createdAt DateTime        @default(now())
   cardio    CardioSession[]
   settings  UserSettings?
+  workouts  Workout[]
 }
 
 model UserSettings {
@@ -27,16 +27,16 @@ model UserSettings {
 }
 
 model Exercise {
-  id            String   @id @default(cuid())
-  name          String   @unique
+  id            String          @id @default(cuid())
+  name          String          @unique
   category      String
   equipment     String?
   primaryMuscle String?
   metric        String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  sets          Set[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   cardio        CardioSession[]
+  sets          Set[]
 }
 
 model Workout {

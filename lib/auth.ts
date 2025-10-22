@@ -1,31 +1,37 @@
-import { cookies, headers } from 'next/headers';
-import { randomUUID } from 'crypto';
+// /lib/auth.ts (eller hvor din helper ligger)
+import { prisma } from "@/lib/db";
 
-const COOKIE_KEY = 'fitfokus_user';
-const ONE_YEAR = 60 * 60 * 24 * 365;
 
-type UserCookie = {
-  id: string;
+type EnsureUserOpts = {
+  fallbackEmail?: string; // valgfri .env DEMO_EMAIL
 };
 
-export function getOrCreateUserId(): string {
-  const cookieStore = cookies();
-  const existing = cookieStore.get(COOKIE_KEY);
-  if (existing) {
-    try {
-      const parsed = JSON.parse(existing.value) as UserCookie;
-      if (parsed.id) return parsed.id;
-    } catch (error) {
-      console.warn('Invalid user cookie, will try header fallback', error);
-    }
-  }
+export async function getOrCreateUserId(opts: EnsureUserOpts = {}) {
+  // 1) Find e-mail fra session (hvis next-auth er sat op). Ellers brug fallback.
+  let email =
+    process.env.DEMO_EMAIL ||
+    opts.fallbackEmail ||
+    "demo@fitfokus.local";
 
-  // Middleware passes the generated id via a request header on first visit
-  const hdrs = headers();
-  const headerId = hdrs.get('x-fitfokus-user');
-  if (headerId) return headerId;
+  email = email.trim().toLowerCase();
 
-  // Last resort: generate an ephemeral id (no cookie write here)
-  // Route handlers can still persist if needed, but pages will just use this temporarily.
-  return randomUUID();
+  // 2) Upsert på e-mail → få DB-id tilbage (ikke session-id)
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: {},
+    create: {
+      email,
+      settings: {
+        create: {
+          goal: "Styrke + kondition",
+          daysPerWeek: 4,
+          equipmentProfile: "Fitnesscenter (maskiner + frie vægte)",
+          lastPlanType: "Full Body",
+        },
+      },
+    },
+    select: { id: true },
+  });
+
+  return user.id; // <- Dette er DB’ens cuid, matcher dine rækker (cmh1...)
 }

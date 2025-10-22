@@ -1,3 +1,4 @@
+// app/workout/today/page.tsx
 import { prisma } from '@/lib/db';
 import { getOrCreateUserId } from '@/lib/auth';
 import { suggestNextWorkout } from '@/lib/plan';
@@ -20,14 +21,24 @@ async function getActiveWorkout(userId: string) {
 }
 
 export default async function WorkoutTodayPage() {
-  const userId = getOrCreateUserId();
+  // 1) Få et rigtigt id (med await) og bekræft at det findes i DB
+  const userId = await getOrCreateUserId();
+
+  // Hårdfør sanity check – hvis dette fejler, peger du på en anden DB eller får et forkert id retur
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true } });
+  if (!user) {
+    console.error('Resolved userId not found in DB:', { userId });
+    throw new Error('User not found for resolved userId — check auth & DATABASE_URL');
+  }
+
   const suggestion = await suggestNextWorkout(userId);
   let workout = await getActiveWorkout(userId);
 
   if (!workout) {
+    // 2) Brug relations-syntaks (connect) i stedet for rå userId
     workout = await prisma.workout.create({
       data: {
-        userId,
+        user: { connect: { id: userId } },
         planType: suggestion.planType,
         date: new Date(),
       },
@@ -88,3 +99,4 @@ export default async function WorkoutTodayPage() {
     </div>
   );
 }
+console.log("DB host:", (process.env.DATABASE_URL ?? "").split("@").pop()?.split("/")[0]);
