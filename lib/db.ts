@@ -1,18 +1,15 @@
-import { PrismaClient } from '@prisma/client';
-import { assertEnv } from './utils';
+import { PrismaClient } from "@prisma/client";
 
-const databaseUrl = process.env.DATABASE_URL;
-assertEnv('DATABASE_URL', databaseUrl);
+type GlobalWithPrisma = typeof globalThis & {
+  prisma?: PrismaClient;
+};
 
-declare global {
-  // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined;
+const globalForPrisma = globalThis as GlobalWithPrisma;
+
+export const db = globalForPrisma.prisma || new PrismaClient();
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = db;
 }
 
-export const prisma = global.prisma || new PrismaClient({
-  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-});
-
-if (process.env.NODE_ENV !== 'production') {
-  global.prisma = prisma;
-}
+export const prisma = db;
