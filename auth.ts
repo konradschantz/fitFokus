@@ -4,13 +4,24 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import type { NextAuthOptions } from "next-auth";
 import { db } from "@/lib/db";
 
+function requireEnv(name: string) {
+  const value = process.env[name];
+  if (!value) {
+    // Surface clear configuration errors during startup and in logs
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
   session: { strategy: "jwt" },
+  secret: process.env.NEXTAUTH_SECRET || undefined,
+  debug: true,
   providers: [
     Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: requireEnv("GOOGLE_CLIENT_ID"),
+      clientSecret: requireEnv("GOOGLE_CLIENT_SECRET"),
     }),
   ],
   callbacks: {
