@@ -1,14 +1,10 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth/next";
-import type { NextAuthOptions } from "next-auth";
 import { authOptions } from "@/auth";
 import { db } from "@/lib/db";
 
 export default async function DashboardPage() {
-  const session = await getServerSession({
-    ...(authOptions as NextAuthOptions),
-    trustHost: true,
-  } as NextAuthOptions);
+  const session = await getServerSession(authOptions);
 
   if (!session?.user) {
     return (

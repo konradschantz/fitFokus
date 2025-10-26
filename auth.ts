@@ -18,7 +18,6 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET || undefined,
   debug: true,
-  trustHost: true,
   providers: [
     Google({
       clientId: requireEnv("GOOGLE_CLIENT_ID"),
