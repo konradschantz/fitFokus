@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export default withAuth(function middleware(req) {
   const { pathname } = req.nextUrl;
   const token = req.nextauth?.token;
-  if (token && pathname === "/") {
+  if (token && (pathname === "/" || pathname === "/login")) {
     return NextResponse.redirect(new URL("/workout/today", req.url));
   }
   return NextResponse.next();

@@ -15,13 +15,12 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.userId = user.id as unknown as string;
+      if (user) token.userId = user.id;
       return token;
     },
     async session({ session, token }) {
       if (token?.userId) {
-        // @ts-ignore augment session type
-        session.user = { ...(session.user || {}), id: token.userId as string };
+        session.user = { ...(session.user || {}), id: token.userId };
       }
       return session;
     },
