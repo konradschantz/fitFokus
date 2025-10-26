@@ -24,7 +24,7 @@ const payloadSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const userId = getOrCreateUserId();
+    const userId = await getOrCreateUserId();
     const body = await request.json();
     const payload = payloadSchema.parse(body);
     const workout = await prisma.workout.findFirst({ where: { id: payload.workoutId, userId } });

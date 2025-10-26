@@ -25,7 +25,7 @@ function toCsv(rows: Array<Record<string, unknown>>) {
 
 export async function GET(request: Request) {
   try {
-    const userId = getOrCreateUserId();
+    const userId = await getOrCreateUserId();
     const { searchParams } = new URL(request.url);
     const params = querySchema.parse({ format: searchParams.get('format') ?? 'json' });
 

@@ -12,7 +12,7 @@ const workoutCreateSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const userId = getOrCreateUserId();
+    const userId = await getOrCreateUserId();
     const body = await request.json();
     const payload = workoutCreateSchema.parse(body);
     const user = await prisma.user.upsert({
@@ -45,7 +45,7 @@ const workoutsQuerySchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const userId = getOrCreateUserId();
+    const userId = await getOrCreateUserId();
     const { searchParams } = new URL(request.url);
     const params = workoutsQuerySchema.parse({
       from: searchParams.get('from') ?? undefined,

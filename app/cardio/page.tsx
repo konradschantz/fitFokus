@@ -12,7 +12,7 @@ function suggestedDuration(sessions: Array<{ durationMin: number }>) {
 }
 
 export default async function CardioPage() {
-  const userId = getOrCreateUserId();
+  const userId = await getOrCreateUserId();
   const recent = await prisma.cardioSession.findMany({
     where: { userId },
     orderBy: { date: 'desc' },

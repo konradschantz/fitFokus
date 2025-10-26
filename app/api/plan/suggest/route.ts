@@ -5,7 +5,7 @@ import { suggestNextWorkout } from '@/lib/plan';
 
 export async function POST() {
   try {
-    const userId = getOrCreateUserId();
+    const userId = await getOrCreateUserId();
     const plan = await suggestNextWorkout(userId);
     return NextResponse.json(plan);
   } catch (error) {

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SettingsClient } from '@/components/settings/settings-client';
 
 export default async function SettingsPage() {
-  const userId = getOrCreateUserId();
+  const userId = await getOrCreateUserId();
   const settings = await prisma.userSettings.findUnique({ where: { userId } });
 
   return (

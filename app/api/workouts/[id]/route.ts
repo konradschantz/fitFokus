@@ -9,7 +9,7 @@ const paramsSchema = z.object({
 
 export async function GET(_request: Request, { params }: { params: { id: string } }) {
   try {
-    const userId = getOrCreateUserId();
+    const userId = await getOrCreateUserId();
     const { id } = paramsSchema.parse(params);
     const workout = await prisma.workout.findFirst({
       where: { id, userId },

@@ -14,10 +14,10 @@ const cardioSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const userId = getOrCreateUserId();
+    const userId = await getOrCreateUserId();
     const body = await request.json();
     const payload = cardioSchema.parse(body);
-    const cycling = await prisma.exercise.findFirst({ where: { name: 'Cycling' } });
+    const cycling = await prisma.exercise.findFirst({ where: { name: 'Cycling (Stationary)' } });
     if (!cycling) {
       return NextResponse.json({ message: 'Cycling-øvelsen mangler. Kør prisma seed.' }, { status: 400 });
     }

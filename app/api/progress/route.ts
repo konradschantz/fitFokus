@@ -5,7 +5,7 @@ import { getProgress } from '@/lib/progress';
 
 export async function GET() {
   try {
-    const userId = getOrCreateUserId();
+    const userId = await getOrCreateUserId();
     const data = await getProgress(userId);
     return NextResponse.json(data);
   } catch (error) {

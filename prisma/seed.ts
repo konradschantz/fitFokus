@@ -44,7 +44,7 @@ async function main() {
       metric: "kg_reps",
     },
     {
-      name: "Back Squat",
+      name: "Squat",
       category: "Strength",
       equipment: "Barbell",
       primaryMuscle: "Quads",

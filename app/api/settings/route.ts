@@ -12,7 +12,7 @@ const settingsSchema = z.object({
 
 export async function GET() {
   try {
-    const userId = getOrCreateUserId();
+    const userId = await getOrCreateUserId();
     const settings = await prisma.userSettings.findUnique({ where: { userId } });
     return NextResponse.json(settings ?? {});
   } catch (error) {
@@ -23,7 +23,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const userId = getOrCreateUserId();
+    const userId = await getOrCreateUserId();
     const body = await request.json();
     const payload = settingsSchema.parse(body);
     const settings = await prisma.userSettings.upsert({
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
 export async function DELETE() {
   try {
-    const userId = getOrCreateUserId();
+    const userId = await getOrCreateUserId();
     await prisma.$transaction([
       prisma.set.deleteMany({ where: { Workout: { userId } } }),
       prisma.workout.deleteMany({ where: { userId } }),

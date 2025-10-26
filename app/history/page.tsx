@@ -6,7 +6,7 @@ import { TinyChart } from '@/components/history/tiny-chart';
 import { getProgress } from '@/lib/progress';
 
 export default async function HistoryPage() {
-  const userId = getOrCreateUserId();
+  const userId = await getOrCreateUserId();
   const workouts = await prisma.workout.findMany({
     where: { userId },
     orderBy: { date: 'desc' },

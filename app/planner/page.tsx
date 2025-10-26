@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlannerClient } from '@/components/planner/planner-client';
 
 export default async function PlannerPage() {
-  const userId = getOrCreateUserId();
+  const userId = await getOrCreateUserId();
   const settings = await prisma.userSettings.findUnique({ where: { userId } });
 
   return (
