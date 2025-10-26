@@ -1,11 +1,13 @@
 import { getServerSession } from "next-auth/next";
-import { Session } from "next-auth";
+import type { Session } from "next-auth";
 import { authOptions } from "@/auth";
 import { db } from "@/lib/db";
 
+type SessionUserWithId = Session["user"] & { id?: string };
+
 export default async function DashboardPage() {
-  const session = (await getServerSession(authOptions)) as Session & { user: { id: string } };
-  const userId = (session?.user as { id?: string } | undefined)?.id;
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as SessionUserWithId | undefined)?.id;
   if (!userId) return null;
 
   const user = await db.user.findUnique({
