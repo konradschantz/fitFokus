@@ -1,9 +1,10 @@
 import { getServerSession } from "next-auth/next";
+import { Session } from "next-auth";
 import { authOptions } from "@/auth";
 import { db } from "@/lib/db";
 
-export default async function Dashboard() {
-  const session = await getServerSession(authOptions);
+export default async function DashboardPage() {
+  const session = (await getServerSession(authOptions)) as Session & { user: { id: string } };
   const userId = (session?.user as { id?: string } | undefined)?.id;
   if (!userId) return null;
 
