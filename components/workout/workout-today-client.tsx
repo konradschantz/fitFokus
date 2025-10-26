@@ -107,7 +107,7 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
         ))}
       </div>
       <div className="flex flex-col gap-4 rounded-xl border border-muted bg-white/70 p-4 shadow-sm">
-        <label className="text-sm font-semibold" htmlFor="note">
+        <label className="text-base sm:text-sm font-semibold" htmlFor="note">
           Noter
         </label>
         <Textarea
@@ -117,13 +117,14 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
           placeholder="Hvordan gik træningen?"
           data-set-input="true"
           name="note"
+          className="text-base sm:text-sm"
         />
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        <Button onClick={() => void handleSave()} disabled={isSaving} className="min-w-[140px]">
+        <Button onClick={() => void handleSave()} disabled={isSaving} className="min-w-[140px] h-12 text-base sm:text-sm">
           {isSaving ? 'Gemmer…' : 'Log sæt'}
         </Button>
-        <Button variant="outline" onClick={markNextSet} className="min-w-[140px]">
+        <Button variant="outline" onClick={markNextSet} className="min-w-[140px] h-12 text-base sm:text-sm">
           Næste sæt
         </Button>
         <RestTimer />
@@ -131,3 +132,4 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
     </div>
   );
 }
+

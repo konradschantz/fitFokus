@@ -25,10 +25,10 @@ type SetRowProps = {
 
 export function SetRow({ value, onChange, autoFocus }: SetRowProps) {
   return (
-    <div className="grid grid-cols-[1fr,1fr,1fr,auto] items-center gap-3 rounded-xl border border-muted bg-white/70 p-3 shadow-sm">
-      <div className="text-sm">
-        <p className="font-semibold">{value.exerciseName}</p>
-        <p className="text-xs text-muted-foreground">Mål: {value.targetReps} reps</p>
+    <div className="grid grid-cols-1 gap-4 rounded-xl border border-muted bg-white/70 p-3 shadow-sm sm:grid-cols-[1fr,auto,1fr,auto] sm:items-start">
+      <div className="text-base sm:text-sm min-w-0">
+        <p className="font-semibold truncate">{value.exerciseName}</p>
+        <p className="text-sm sm:text-xs text-muted-foreground">Mål: {value.targetReps} reps</p>
       </div>
       <NumberStepInput
         value={value.weight}
@@ -36,20 +36,20 @@ export function SetRow({ value, onChange, autoFocus }: SetRowProps) {
         step={2.5}
         min={0}
         placeholder="Vægt (kg)"
-        className="justify-self-center"
+        className="w-full min-w-0"
         inputProps={{
           'data-set-input': 'true',
           name: `weight-${value.orderIndex}`,
           autoFocus,
         }}
       />
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 min-w-0">
         <NumberStepInput
           value={value.reps}
           onChange={(reps) => onChange({ ...value, reps })}
           min={0}
           placeholder="Reps"
-          className="h-11"
+          className="h-11 w-full min-w-0"
           inputProps={{
             'data-set-input': 'true',
             name: `reps-${value.orderIndex}`,
@@ -59,12 +59,12 @@ export function SetRow({ value, onChange, autoFocus }: SetRowProps) {
           value={value.notes ?? ''}
           onChange={(event) => onChange({ ...value, notes: event.target.value })}
           placeholder="Noter"
-          className="h-10 text-xs"
+          className="h-11 text-base sm:text-sm"
           data-set-input="true"
           name={`notes-${value.orderIndex}`}
         />
       </div>
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-stretch sm:items-center gap-2 min-w-0">
         <NumberStepInput
           value={value.rpe}
           onChange={(rpe) => onChange({ ...value, rpe })}
@@ -72,7 +72,7 @@ export function SetRow({ value, onChange, autoFocus }: SetRowProps) {
           min={1}
           max={10}
           placeholder="RPE"
-          className="h-11"
+          className="h-11 w-full min-w-0"
           inputProps={{
             'data-set-input': 'true',
             name: `rpe-${value.orderIndex}`,
@@ -83,3 +83,4 @@ export function SetRow({ value, onChange, autoFocus }: SetRowProps) {
     </div>
   );
 }
+

@@ -71,11 +71,11 @@ export function SettingsClient({ initialGoal, initialDaysPerWeek, initialEquipme
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-2">
-          <span className="text-sm font-semibold">Mål</span>
+          <span className="text-base sm:text-sm font-semibold">Mål</span>
           <select
             value={goal}
             onChange={(event) => setGoal(event.target.value)}
-            className="h-11 rounded-lg border border-muted bg-white px-3 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="h-11 rounded-lg border border-muted bg-white px-3 text-base sm:text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             {goals.map((option) => (
               <option key={option.value} value={option.value}>
@@ -85,7 +85,7 @@ export function SettingsClient({ initialGoal, initialDaysPerWeek, initialEquipme
           </select>
         </label>
         <label className="flex flex-col gap-2">
-          <span className="text-sm font-semibold">Dage pr. uge</span>
+          <span className="text-base sm:text-sm font-semibold">Dage pr. uge</span>
           <input
             type="number"
             min={1}
@@ -95,15 +95,15 @@ export function SettingsClient({ initialGoal, initialDaysPerWeek, initialEquipme
               const parsed = Number(event.target.value);
               setDaysPerWeek(Number.isNaN(parsed) ? 1 : Math.min(Math.max(parsed, 1), 7));
             }}
-            className="h-11 rounded-lg border border-muted bg-white px-3 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="h-11 rounded-lg border border-muted bg-white px-3 text-base sm:text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           />
         </label>
         <label className="flex flex-col gap-2">
-          <span className="text-sm font-semibold">Udstyr</span>
+          <span className="text-base sm:text-sm font-semibold">Udstyr</span>
           <select
             value={equipment}
             onChange={(event) => setEquipment(event.target.value)}
-            className="h-11 rounded-lg border border-muted bg-white px-3 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="h-11 rounded-lg border border-muted bg-white px-3 text-base sm:text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             {equipmentOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -117,25 +117,25 @@ export function SettingsClient({ initialGoal, initialDaysPerWeek, initialEquipme
         {isSaving ? 'Gemmer…' : 'Gem præferencer'}
       </Button>
       <div className="space-y-3 rounded-xl border border-muted bg-white/70 p-4 shadow-sm">
-        <p className="text-sm font-semibold">Eksport</p>
+        <p className="text-base sm:text-sm font-semibold">Eksport</p>
         <div className="flex flex-wrap gap-3">
           <a
             href="/api/export?format=json"
-            className="inline-flex h-11 items-center justify-center rounded-lg border border-muted px-4 text-sm font-medium text-foreground hover:border-primary"
+            className="inline-flex h-11 items-center justify-center rounded-lg border border-muted px-4 text-base sm:text-sm font-medium text-foreground hover:border-primary"
           >
             Download JSON
           </a>
           <a
             href="/api/export?format=csv"
-            className="inline-flex h-11 items-center justify-center rounded-lg border border-muted px-4 text-sm font-medium text-foreground hover:border-primary"
+            className="inline-flex h-11 items-center justify-center rounded-lg border border-muted px-4 text-base sm:text-sm font-medium text-foreground hover:border-primary"
           >
             Download CSV
           </a>
         </div>
       </div>
       <div className="space-y-2 rounded-xl border border-red-100 bg-red-50 p-4">
-        <p className="text-sm font-semibold text-red-700">Slet alle data</p>
-        <p className="text-xs text-red-600">Dette kan ikke fortrydes.</p>
+        <p className="text-base sm:text-sm font-semibold text-red-700">Slet alle data</p>
+        <p className="text-sm text-red-600">Dette kan ikke fortrydes.</p>
         <Button variant="outline" onClick={() => void handleDelete()} disabled={isDeleting} className="border-red-300 text-red-700 hover:bg-red-100">
           {isDeleting ? 'Sletter…' : 'Slet data'}
         </Button>

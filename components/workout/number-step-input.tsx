@@ -28,7 +28,7 @@ export function NumberStepInput({ value, onChange, step = 1, min, max, placehold
   );
 
   return (
-    <div className={cn('flex h-11 items-center gap-2', className)}>
+    <div className={cn('flex h-11 w-full items-center gap-2', className)}>
       <Button
         variant="ghost"
         type="button"
@@ -48,7 +48,7 @@ export function NumberStepInput({ value, onChange, step = 1, min, max, placehold
         }}
         inputMode="decimal"
         placeholder={placeholder}
-        className="h-11 text-center text-base"
+        className="h-11 flex-1 min-w-0 text-center text-base"
         {...inputProps}
       />
       <Button

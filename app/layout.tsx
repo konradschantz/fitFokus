@@ -1,12 +1,18 @@
 import './globals.css';
 import Link from 'next/link';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { ToastProvider } from '@/components/ui/toast';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/auth';
 import { SessionProviderClient } from '@/components/providers/session-provider';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
 
 export const metadata: Metadata = {
   title: 'Fit Fokus',
