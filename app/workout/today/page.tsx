@@ -38,7 +38,7 @@ export default async function WorkoutTodayPage() {
     // 2) Brug relations-syntaks (connect) i stedet for rå userId
     workout = await prisma.workout.create({
       data: {
-        user: { connect: { id: userId } },
+        User: { connect: { id: userId } },
         planType: suggestion.planType,
         date: new Date(),
       },
