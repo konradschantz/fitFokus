@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
-  if (session) redirect("/workout/today");
+  if (session) redirect("/greeting");
 
   return (
     <main className="mx-auto max-w-md p-6 space-y-6">
@@ -16,7 +16,7 @@ export default async function Home() {
         </p>
       </div>
       <a
-        href="/api/auth/signin?callbackUrl=%2Fworkout%2Ftoday"
+        href="/api/auth/signin?callbackUrl=%2Fgreeting"
         className="inline-flex h-12 items-center justify-center rounded-md bg-blue-600 px-5 text-base sm:text-sm text-white hover:bg-blue-700"
       >
         Log ind med Google

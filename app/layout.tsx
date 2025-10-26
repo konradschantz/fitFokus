@@ -37,7 +37,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <ToastProvider>
             <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-6 px-4 py-6">
               <header className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-muted bg-white/80 p-4 shadow-sm">
-                <Link href={session ? "/workout/today" : "/"} className="text-lg font-semibold tracking-tight">
+                <Link href={session ? "/greeting" : "/"} className="text-lg font-semibold tracking-tight">
                   Fit Fokus
                 </Link>
                 <nav className="flex flex-wrap gap-2 text-sm">

@@ -18,6 +18,7 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET || undefined,
   debug: true,
+  trustHost: true,
   providers: [
     Google({
       clientId: requireEnv("GOOGLE_CLIENT_ID"),
@@ -34,6 +35,17 @@ export const authOptions: NextAuthOptions = {
         session.user = { ...(session.user || {}), id: token.userId };
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      try {
+        const isRelative = url.startsWith("/");
+        const isSameOrigin = url.startsWith(baseUrl);
+        if (isRelative) return "/greeting";
+        if (isSameOrigin) return `${baseUrl}/greeting`;
+        return baseUrl;
+      } catch {
+        return `${baseUrl}/greeting`;
+      }
     },
   },
   pages: { signIn: "/login" },

@@ -4,7 +4,7 @@ import type { NextAuthOptions } from "next-auth";
 import { authOptions } from "@/auth";
 import { db } from "@/lib/db";
 
-export default async function DashboardPage() {
+export default async function GreetingPage() {
   const session = await getServerSession({
     ...(authOptions as NextAuthOptions),
     trustHost: true,
@@ -94,3 +94,4 @@ export default async function DashboardPage() {
     </main>
   );
 }
+

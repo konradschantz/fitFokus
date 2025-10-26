@@ -9,7 +9,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.replace("/workout/today");
+      router.replace("/greeting");
     }
   }, [status, router]);
   return (
@@ -18,7 +18,7 @@ export default function LoginPage() {
       <p className="text-sm opacity-80">Brug din Google-konto for at fortsætte.</p>
       <button
         className="rounded px-4 py-2 bg-blue-600 text-white"
-        onClick={() => signIn("google", { callbackUrl: "/workout/today" })}
+        onClick={() => signIn("google", { callbackUrl: "/greeting" })}
       >
         Log ind med Google
       </button>
