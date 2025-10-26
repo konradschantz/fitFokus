@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
+import { signOut } from 'next-auth/react';
 
 const goals = [
   { value: 'styrke', label: 'Styrke' },
@@ -137,6 +138,11 @@ export function SettingsClient({ initialGoal, initialDaysPerWeek, initialEquipme
         <p className="text-xs text-red-600">Dette kan ikke fortrydes.</p>
         <Button variant="outline" onClick={() => void handleDelete()} disabled={isDeleting} className="border-red-300 text-red-700 hover:bg-red-100">
           {isDeleting ? 'Sletter…' : 'Slet data'}
+        </Button>
+      </div>
+      <div className="pt-2">
+        <Button onClick={() => signOut({ callbackUrl: '/' })} className="w-full">
+          Log af
         </Button>
       </div>
     </div>
