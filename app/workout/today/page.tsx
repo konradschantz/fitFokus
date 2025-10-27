@@ -87,13 +87,10 @@ export default async function WorkoutTodayPage() {
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Træning i dag</p>
-            <h1 className="text-3xl font-bold sm:text-4xl">Dagens program</h1>
-            <p className="max-w-xl text-sm text-muted-foreground sm:text-base">
-              Din plan er skræddersyet efter {suggestion.planType.replaceAll('_', ' ')}-programmet. Vælg den øvelse du vil starte
-              med, og log den direkte fra karrusellen.
-            </p>
+            
+          
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-center shadow-sm backdrop-blur">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Øvelser i dag</p>
               <p className="text-lg font-semibold">{orderedSets.length}</p>
