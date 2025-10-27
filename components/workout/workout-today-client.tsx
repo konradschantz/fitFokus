@@ -51,7 +51,6 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
           body: JSON.stringify({
             workoutId,
             planType,
-            note,
             sets: payloadSets.map((set) => ({
               exerciseId: set.exerciseId,
               orderIndex: set.orderIndex,
@@ -76,7 +75,7 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
         if (!silent) setIsSaving(false);
       }
     },
-    [note, planType, push, workoutId]
+    [planType, push, workoutId]
   );
 
   const handleSave = useCallback(() => {

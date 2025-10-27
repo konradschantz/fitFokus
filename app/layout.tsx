@@ -24,9 +24,7 @@ export const metadata: Metadata = {
 const navItems = [
   { href: '/workout/today', label: 'Dagens træning' },
   { href: '/history', label: 'Historik' },
-  { href: '/cardio', label: 'Cardio' },
-  { href: '/planner', label: 'Planner' },
-  { href: '/exercises', label: 'Øvelser' },
+    { href: '/exercises', label: 'Øvelser' },
   { href: '/settings', label: 'Indstillinger' },
 ];
 
@@ -78,3 +76,4 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     </html>
   );
 }
+
