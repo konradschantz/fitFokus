@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { NumberStepInput } from './number-step-input';
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { EditableSet } from './types';
 
@@ -31,7 +30,9 @@ export function ExerciseCard({
     <Card
       className={cn(
         'flex h-full min-h-[360px] flex-col justify-between gap-6 p-6 transition-all duration-200 sm:min-h-[380px]',
-        isActive ? 'border-primary/70 shadow-lg shadow-primary/10' : 'border-muted/80 bg-background/80'
+        isActive
+          ? 'border-primary/70 shadow-lg shadow-primary/10 opacity-100 scale-100'
+          : 'border-muted/80 bg-background/80 opacity-60 scale-[0.98]'
       )}
     >
       <CardHeader className="gap-3 p-0">
@@ -53,6 +54,17 @@ export function ExerciseCard({
       </CardHeader>
 
       <CardContent className="flex flex-1 flex-col gap-6 p-0">
+        <div className="overflow-hidden rounded-lg bg-muted/60">
+          <div className="aspect-video w-full">
+            <img
+              src="/exercise-placeholder.svg"
+              alt={`${value.exerciseName} billede`}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <span className="text-sm font-semibold text-muted-foreground">Vægt (kg)</span>
@@ -83,34 +95,6 @@ export function ExerciseCard({
               }}
             />
           </div>
-          <div className="space-y-2">
-            <span className="text-sm font-semibold text-muted-foreground">RPE</span>
-            <NumberStepInput
-              value={value.rpe}
-              onChange={(rpe) => onChange({ ...value, rpe })}
-              step={0.5}
-              min={1}
-              max={10}
-              placeholder="RPE"
-              inputProps={{
-                'data-set-input': 'true',
-                name: `rpe-${value.orderIndex}`,
-                onFocus,
-              }}
-            />
-          </div>
-          <div className="space-y-2">
-            <span className="text-sm font-semibold text-muted-foreground">Noter</span>
-            <Input
-              value={value.notes ?? ''}
-              onChange={(event) => onChange({ ...value, notes: event.target.value })}
-              placeholder="Tilføj noter"
-              className="h-11 text-base"
-              data-set-input="true"
-              name={`notes-${value.orderIndex}`}
-              onFocus={onFocus}
-            />
-          </div>
         </div>
       </CardContent>
 
@@ -119,7 +103,7 @@ export function ExerciseCard({
           type="button"
           onClick={onToggleComplete}
           className="h-12 text-base"
-          variant={value.completed ? 'secondary' : 'default'}
+          variant={value.completed ? 'outline' : 'default'}
         >
           {value.completed ? 'Markér som ikke udført' : 'Markér som udført'}
         </Button>
@@ -134,3 +118,4 @@ export function ExerciseCard({
     </Card>
   );
 }
+

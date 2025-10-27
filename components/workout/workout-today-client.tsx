@@ -165,6 +165,38 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
     [sets.length]
   );
 
+  // Basic swipe left/right support for touch devices
+  useEffect(() => {
+    const node = scrollerRef.current;
+    if (!node) return;
+    let startX = 0;
+    let startY = 0;
+    let startTime = 0;
+
+    const onTouchStart = (e: TouchEvent) => {
+      const t = e.touches[0];
+      startX = t.clientX;
+      startY = t.clientY;
+      startTime = Date.now();
+    };
+    const onTouchEnd = (e: TouchEvent) => {
+      const t = e.changedTouches[0];
+      const dx = t.clientX - startX;
+      const dy = t.clientY - startY;
+      const dt = Date.now() - startTime;
+      if (dt < 500 && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+        navigateBy(dx < 0 ? 1 : -1);
+      }
+    };
+
+    node.addEventListener('touchstart', onTouchStart, { passive: true });
+    node.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      node.removeEventListener('touchstart', onTouchStart as any);
+      node.removeEventListener('touchend', onTouchEnd as any);
+    };
+  }, [navigateBy]);
+
   return (
     <div className="space-y-8">
       <header className="flex flex-col gap-2">
@@ -198,7 +230,8 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
               }}
               className={cn(
                 'w-[85vw] max-w-[380px] snap-center shrink-0 sm:w-[360px]',
-                'scroll-mx-4'
+                'scroll-mx-4 transition duration-200',
+                index === activeIndex ? 'opacity-100 scale-100' : 'opacity-50 sm:opacity-70 scale-[0.98]'
               )}
               onFocus={() => handleSelectCard(index)}
               onClick={() => handleSelectCard(index)}
