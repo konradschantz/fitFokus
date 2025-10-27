@@ -130,11 +130,11 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
     (index: number) => {
       setSets((prev) => {
         const updated = prev.map((set, idx) => (idx === index ? { ...set, completed: !set.completed } : set));
-        const isCompleted = updated[index]?.completed ?? false;
-        if (isCompleted) {
-          const nextIndex = updated.findIndex((set, idx) => idx > index && !set.completed);
-          const fallbackIndex = nextIndex >= 0 ? nextIndex : updated.findIndex((set) => !set.completed);
-          setActiveIndex(fallbackIndex >= 0 ? fallbackIndex : index);
+        const justCompleted = updated[index]?.completed ?? false;
+        // If user marked this as completed, move to the next card in a loop
+        if (justCompleted) {
+          const next = (index + 1) % updated.length;
+          setActiveIndex(next);
         } else {
           setActiveIndex(index);
         }
@@ -157,8 +157,10 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
   const navigateBy = useCallback(
     (delta: number) => {
       setActiveIndex((current) => {
-        if (sets.length === 0) return 0;
-        const next = Math.min(Math.max(current + delta, 0), sets.length - 1);
+        const len = sets.length;
+        if (len === 0) return 0;
+        // Wrap like a carousel
+        const next = (current + delta + len) % len;
         return next;
       });
     },
@@ -255,7 +257,7 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
             className="h-10 w-10 rounded-full border border-muted bg-background/80 px-0 text-lg shadow-sm"
             onClick={() => navigateBy(-1)}
             aria-label="Forrige øvelse"
-            disabled={activeIndex === 0 || sets.length <= 1}
+            disabled={sets.length <= 1}
           >
             ‹
           </Button>
@@ -267,7 +269,7 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
             className="h-10 w-10 rounded-full border border-muted bg-background/80 px-0 text-lg shadow-sm"
             onClick={() => navigateBy(1)}
             aria-label="Næste øvelse"
-            disabled={activeIndex >= sets.length - 1 || sets.length <= 1}
+            disabled={sets.length <= 1}
           >
             ›
           </Button>
@@ -306,3 +308,4 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
     </div>
   );
 }
+
