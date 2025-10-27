@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 const buttonVariants = {
   default:
-    'inline-flex h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none',
+    'inline-flex h-11 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none',
   outline:
     'inline-flex h-11 items-center justify-center rounded-lg border border-primary px-4 text-sm font-semibold text-primary transition hover:bg-primary/10 disabled:opacity-50 disabled:pointer-events-none',
   ghost:

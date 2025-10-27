@@ -1,5 +1,6 @@
 import './globals.css';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Metadata, Viewport } from 'next';
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
@@ -36,7 +37,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body className="min-h-screen bg-background text-foreground">
         <script
           dangerouslySetInnerHTML={{
-            __html: `(()=>{try{const ls=localStorage.getItem('theme');const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;const theme=ls?JSON.parse(ls):(prefersDark?'dark':'light');const root=document.documentElement;if(theme==='dark'){root.classList.add('dark');}else{root.classList.remove('dark');}}catch(e){}})();`,
+            __html: `(()=>{try{const stored=localStorage.getItem('theme');const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;const theme=stored?JSON.parse(stored):(prefersDark?'dark':'light');const root=document.documentElement;const body=document.body;if(theme==='dark'){root.classList.add('dark');root.style.colorScheme='dark';if(body)body.style.colorScheme='dark';}else{root.classList.remove('dark');root.style.colorScheme='light';if(body)body.style.colorScheme='light';}}catch(error){console.warn('Failed to hydrate theme',error);}})();`,
           }}
         />
         <SessionProviderClient session={session}>
@@ -61,7 +62,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                     ))
                   ) : (
                   <span className="inline-flex items-center justify-center p-1" aria-hidden="true">
-                    <img src="/favicon.svg" alt="Fit Fokus" className="h-6 w-6" />
+                    <Image src="/favicon.svg" alt="Fit Fokus" width={24} height={24} className="h-6 w-6" />
                   </span>
                 )}
                 <div className="ml-2">

@@ -50,7 +50,7 @@ export default async function GreetingPage() {
         <div>
           <Link
             href="/workout/today"
-            className="inline-block rounded-2xl bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700"
+            className="inline-flex items-center justify-center rounded-2xl bg-primary px-4 py-2 text-primary-foreground shadow transition hover:bg-primary/90"
           >
             Start træning
           </Link>
@@ -58,8 +58,8 @@ export default async function GreetingPage() {
       </section>
 
       <section>
-        <details className="rounded-xl border p-4">
-          <summary className="cursor-pointer select-none font-medium">
+        <details className="rounded-xl border border-muted bg-background/70 p-4 shadow-sm">
+          <summary className="cursor-pointer select-none font-medium text-foreground">
             {latestWorkout
               ? `Sidste træning – ${latestDateLabel}`
               : "Sidste træning – Ingen træninger endnu"}

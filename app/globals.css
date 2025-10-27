@@ -8,6 +8,10 @@
   --muted: 214 17% 92%;
   --muted-foreground: 215 16% 45%;
   --primary: 220 90% 56%;
+  --primary-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  color-scheme: light;
 }
 
 .dark {
@@ -16,6 +20,9 @@
   --muted: 222 16% 18%;
   --muted-foreground: 215 16% 72%;
   --primary: 220 90% 56%;
+  --primary-foreground: 210 40% 98%;
+  --destructive: 0 63% 52%;
+  --destructive-foreground: 0 0% 100%;
   color-scheme: dark;
 }
 
