@@ -3,7 +3,6 @@ import { prisma } from '@/lib/db';
 import { getOrCreateUserId } from '@/lib/auth';
 import { suggestNextWorkout } from '@/lib/plan';
 import { WorkoutTodayClient } from '@/components/workout/workout-today-client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDate } from '@/lib/utils';
 
 async function getActiveWorkout(userId: string) {
@@ -80,22 +79,43 @@ export default async function WorkoutTodayPage() {
     notes: set.notes ?? '',
   }));
 
+  const orderedSets = [...initialSets, ...extraSets].sort((a, b) => a.orderIndex - b.orderIndex);
+
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Dagens plan – {formatDate(new Date())}</CardTitle>
-          <p className="text-sm text-muted-foreground">Plan-type: {suggestion.planType.replaceAll('_', ' ')}</p>
-        </CardHeader>
-        <CardContent>
-          <WorkoutTodayClient
-            workoutId={workout.id}
-            planType={suggestion.planType}
-            initialSets={[...initialSets, ...extraSets].sort((a, b) => a.orderIndex - b.orderIndex)}
-            initialNote={workout.note}
-          />
-        </CardContent>
-      </Card>
+    <div className="space-y-10">
+      <section className="overflow-hidden rounded-3xl border border-primary/10 bg-gradient-to-br from-primary/15 via-background to-background p-6 sm:p-10">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Træning i dag</p>
+            <h1 className="text-3xl font-bold sm:text-4xl">Dagens program</h1>
+            <p className="max-w-xl text-sm text-muted-foreground sm:text-base">
+              Din plan er skræddersyet efter {suggestion.planType.replaceAll('_', ' ')}-programmet. Vælg den øvelse du vil starte
+              med, og log den direkte fra karrusellen.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-center shadow-sm backdrop-blur">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Øvelser i dag</p>
+              <p className="text-lg font-semibold">{orderedSets.length}</p>
+            </div>
+            <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-center shadow-sm backdrop-blur">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Aktivt program</p>
+              <p className="text-lg font-semibold">{suggestion.planType.replaceAll('_', ' ')}</p>
+            </div>
+            <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-center shadow-sm backdrop-blur">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Dato</p>
+              <p className="text-lg font-semibold">{formatDate(new Date())}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <WorkoutTodayClient
+        workoutId={workout.id}
+        planType={suggestion.planType}
+        initialSets={orderedSets}
+        initialNote={workout.note}
+      />
     </div>
   );
 }
