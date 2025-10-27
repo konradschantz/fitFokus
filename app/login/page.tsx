@@ -17,7 +17,7 @@ export default function LoginPage() {
       <h1 className="text-2xl font-semibold">Log ind</h1>
       <p className="text-sm opacity-80">Brug din Google-konto for at fortsætte.</p>
       <button
-        className="rounded px-4 py-2 bg-blue-600 text-white"
+        className="rounded px-4 py-2 bg-primary text-primary-foreground transition hover:bg-primary/90"
         onClick={() => signIn("google", { callbackUrl: "/greeting" })}
       >
         Log ind med Google

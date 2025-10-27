@@ -17,7 +17,7 @@ export default async function Home() {
       </div>
       <a
         href="/api/auth/signin?callbackUrl=%2Fgreeting"
-        className="inline-flex h-12 items-center justify-center rounded-md bg-blue-600 px-5 text-base sm:text-sm text-white hover:bg-blue-700"
+        className="inline-flex h-12 items-center justify-center rounded-md bg-primary px-5 text-base font-medium text-primary-foreground transition hover:bg-primary/90 sm:text-sm"
       >
         Log ind med Google
       </a>

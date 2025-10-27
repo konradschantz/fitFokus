@@ -12,7 +12,11 @@ const config: Config = {
         'muted-foreground': 'hsl(var(--muted-foreground))',
         primary: {
           DEFAULT: 'hsl(var(--primary))',
-          foreground: '#fff',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
         },
       },
       borderRadius: {

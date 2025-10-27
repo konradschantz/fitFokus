@@ -133,10 +133,15 @@ export function SettingsClient({ initialGoal, initialDaysPerWeek, initialEquipme
           </a>
         </div>
       </div>
-      <div className="space-y-2 rounded-xl border border-red-100 bg-red-50 p-4">
-        <p className="text-base sm:text-sm font-semibold text-red-700">Slet alle data</p>
-        <p className="text-sm text-red-600">Dette kan ikke fortrydes.</p>
-        <Button variant="outline" onClick={() => void handleDelete()} disabled={isDeleting} className="border-red-300 text-red-700 hover:bg-red-100">
+      <div className="space-y-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4">
+        <p className="text-base sm:text-sm font-semibold text-destructive">Slet alle data</p>
+        <p className="text-sm text-destructive/80">Dette kan ikke fortrydes.</p>
+        <Button
+          variant="outline"
+          onClick={() => void handleDelete()}
+          disabled={isDeleting}
+          className="border-destructive/40 text-destructive transition hover:bg-destructive/10"
+        >
           {isDeleting ? 'Sletter…' : 'Slet data'}
         </Button>
       </div>
