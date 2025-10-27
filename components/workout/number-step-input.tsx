@@ -1,9 +1,8 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { useCallback, type InputHTMLAttributes } from 'react';
+import { type InputHTMLAttributes } from 'react';
 
 type NumberStepInputProps = {
   value: number | null;
@@ -17,49 +16,25 @@ type NumberStepInputProps = {
 };
 
 export function NumberStepInput({ value, onChange, step = 1, min, max, placeholder, className, inputProps }: NumberStepInputProps) {
-  const update = useCallback(
-    (delta: number) => {
-      const next = Number(value ?? 0) + delta;
-      if (min != null && next < min) return onChange(min);
-      if (max != null && next > max) return onChange(max);
-      onChange(Number.isNaN(next) ? null : Math.round(next * 100) / 100);
-    },
-    [value, onChange, min, max]
-  );
-
   return (
-    <div className={cn('flex h-11 w-full items-center gap-2', className)}>
-      <Button
-        variant="ghost"
-        type="button"
-        className="h-11 w-11 rounded-lg border border-muted text-lg"
-        onClick={() => update(-step)}
-        aria-label="minus"
-      >
-        -
-      </Button>
+    <div className={cn('flex h-11 w-full items-center', className)}>
       <Input
         value={value ?? ''}
         onChange={(event) => {
           const raw = event.target.value;
           if (raw === '') return onChange(null);
           const parsed = Number(raw);
-          if (!Number.isNaN(parsed)) onChange(parsed);
+          if (Number.isNaN(parsed)) return;
+          // Respect min/max if provided
+          if (min != null && parsed < min) return onChange(min);
+          if (max != null && parsed > max) return onChange(max);
+          onChange(parsed);
         }}
         inputMode="decimal"
         placeholder={placeholder}
-        className="h-11 flex-1 min-w-0 text-center text-base"
+        className="h-11 w-full min-w-0 text-base"
         {...inputProps}
       />
-      <Button
-        variant="ghost"
-        type="button"
-        className="h-11 w-11 rounded-lg border border-muted text-lg"
-        onClick={() => update(step)}
-        aria-label="plus"
-      >
-        +
-      </Button>
     </div>
   );
 }

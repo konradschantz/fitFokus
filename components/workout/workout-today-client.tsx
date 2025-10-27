@@ -6,7 +6,7 @@ import type { EditableSet } from './types';
 import { Button } from '@/components/ui/button';
 import { RestTimer } from './rest-timer';
 import { useToast } from '@/components/ui/toast';
-import { Textarea } from '@/components/ui/textarea';
+// Notes UI removed
 import { cn } from '@/lib/utils';
 
 type WorkoutTodayClientProps = {
@@ -18,7 +18,7 @@ type WorkoutTodayClientProps = {
 
 export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNote }: WorkoutTodayClientProps) {
   const [sets, setSets] = useState<EditableSet[]>(initialSets);
-  const [note, setNote] = useState(initialNote ?? '');
+  const [note] = useState(initialNote ?? '');
   const [isSaving, setIsSaving] = useState(false);
   const [activeIndex, setActiveIndex] = useState(() => {
     const firstIncomplete = initialSets.findIndex((set) => !set.completed);
@@ -30,17 +30,6 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
 
   const nextIncompleteIndex = useMemo(() => sets.findIndex((set) => !set.completed), [sets]);
   const completedCount = useMemo(() => sets.filter((set) => set.completed).length, [sets]);
-
-  const focusActiveInput = useCallback(
-    (index: number) => {
-      const set = sets[index];
-      if (!set) return;
-      const selector = `[data-set-input][name$='-${set.orderIndex}']`;
-      const input = document.querySelector<HTMLInputElement | HTMLTextAreaElement>(selector);
-      input?.focus();
-    },
-    [sets]
-  );
 
   const scrollToCard = useCallback(
     (index: number) => {
@@ -95,9 +84,9 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
   }, [persistSets, sets]);
 
   useEffect(() => {
+    // Only scroll the active card into view; avoid auto-focusing inputs
     scrollToCard(activeIndex);
-    focusActiveInput(activeIndex);
-  }, [activeIndex, focusActiveInput, scrollToCard]);
+  }, [activeIndex, scrollToCard]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -276,20 +265,7 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-xl border border-muted bg-background/70 p-4 shadow-sm">
-        <label className="text-sm font-semibold" htmlFor="note">
-          Noter
-        </label>
-        <Textarea
-          id="note"
-          value={note}
-          onChange={(event) => setNote(event.target.value)}
-          placeholder="Hvordan gik træningen?"
-          data-set-input="true"
-          name="note"
-          className="text-base sm:text-sm"
-        />
-      </div>
+      {/** Notes section hidden per request */}
 
       <div className="flex flex-wrap items-center gap-3">
         <Button onClick={handleSave} disabled={isSaving} className="min-w-[160px] h-12 text-base sm:text-sm">
@@ -308,4 +284,5 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
     </div>
   );
 }
+
 
