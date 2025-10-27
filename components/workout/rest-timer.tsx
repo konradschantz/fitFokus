@@ -36,7 +36,7 @@ export function RestTimer({ defaultSeconds = 90 }: { defaultSeconds?: number }) 
   const seconds = (remaining % 60).toString().padStart(2, '0');
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-muted bg-white/70 p-3 shadow-sm">
+    <div className="flex items-center gap-3 rounded-xl border border-muted bg-background/70 p-3 shadow-sm">
       <div>
         <p className="text-xs uppercase tracking-wide text-muted-foreground">Restetimer</p>
         <p className="text-2xl font-semibold tabular-nums">{minutes}:{seconds}</p>

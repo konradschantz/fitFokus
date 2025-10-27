@@ -46,7 +46,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
       <div className="fixed bottom-4 right-4 flex w-80 flex-col gap-2">
         {toasts.map((toast) => (
-          <div key={toast.id} className="rounded-lg border border-muted bg-white p-4 shadow-lg">
+          <div key={toast.id} className="rounded-lg border border-muted bg-background p-4 shadow-lg">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="text-sm font-semibold">{toast.title}</p>

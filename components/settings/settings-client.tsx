@@ -75,7 +75,7 @@ export function SettingsClient({ initialGoal, initialDaysPerWeek, initialEquipme
           <select
             value={goal}
             onChange={(event) => setGoal(event.target.value)}
-            className="h-11 rounded-lg border border-muted bg-white px-3 text-base sm:text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="h-11 rounded-lg border border-muted bg-background px-3 text-base sm:text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             {goals.map((option) => (
               <option key={option.value} value={option.value}>
@@ -95,7 +95,7 @@ export function SettingsClient({ initialGoal, initialDaysPerWeek, initialEquipme
               const parsed = Number(event.target.value);
               setDaysPerWeek(Number.isNaN(parsed) ? 1 : Math.min(Math.max(parsed, 1), 7));
             }}
-            className="h-11 rounded-lg border border-muted bg-white px-3 text-base sm:text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="h-11 rounded-lg border border-muted bg-background px-3 text-base sm:text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           />
         </label>
         <label className="flex flex-col gap-2">
@@ -103,7 +103,7 @@ export function SettingsClient({ initialGoal, initialDaysPerWeek, initialEquipme
           <select
             value={equipment}
             onChange={(event) => setEquipment(event.target.value)}
-            className="h-11 rounded-lg border border-muted bg-white px-3 text-base sm:text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="h-11 rounded-lg border border-muted bg-background px-3 text-base sm:text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             {equipmentOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -116,7 +116,7 @@ export function SettingsClient({ initialGoal, initialDaysPerWeek, initialEquipme
       <Button onClick={() => void handleSave()} disabled={isSaving} className="min-w-[140px]">
         {isSaving ? 'Gemmer…' : 'Gem præferencer'}
       </Button>
-      <div className="space-y-3 rounded-xl border border-muted bg-white/70 p-4 shadow-sm">
+      <div className="space-y-3 rounded-xl border border-muted bg-background/70 p-4 shadow-sm">
         <p className="text-base sm:text-sm font-semibold">Eksport</p>
         <div className="flex flex-wrap gap-3">
           <a

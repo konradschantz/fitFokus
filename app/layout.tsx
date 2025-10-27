@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next';
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { ToastProvider } from '@/components/ui/toast';
+import ThemeToggle from '@/components/theme-toggle';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/auth';
 import { SessionProviderClient } from '@/components/providers/session-provider';
@@ -31,16 +32,21 @@ const navItems = [
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const session = await getServerSession(authOptions);
   return (
-    <html lang="da">
+    <html lang="da" suppressHydrationWarning>
       <body className="min-h-screen bg-background text-foreground">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(()=>{try{const ls=localStorage.getItem('theme');const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;const theme=ls?JSON.parse(ls):(prefersDark?'dark':'light');const root=document.documentElement;if(theme==='dark'){root.classList.add('dark');}else{root.classList.remove('dark');}}catch(e){}})();`,
+          }}
+        />
         <SessionProviderClient session={session}>
           <ToastProvider>
             <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-6 px-4 py-6">
-              <header className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-muted bg-white/80 p-4 shadow-sm">
-                <Link href={session ? "/greeting" : "/"} className="text-lg font-semibold tracking-tight">
+              <header className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-muted bg-background/80 p-4 text-foreground shadow-sm">
+                <Link href={session ? "/greeting" : "/"} className="text-lg font-semibold tracking-tight text-foreground">
                   Fit Fokus
                 </Link>
-                <nav className="flex flex-wrap gap-2 text-sm">
+                <nav className="flex flex-wrap items-center gap-2 text-sm">
                   {session ? (
                     navItems.map((item) => (
                       <Link
@@ -58,6 +64,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                     <img src="/favicon.svg" alt="Fit Fokus" className="h-6 w-6" />
                   </span>
                 )}
+                <div className="ml-2">
+                  <ThemeToggle />
+                </div>
               </nav>
               </header>
               <main className="flex-1">{children}</main>

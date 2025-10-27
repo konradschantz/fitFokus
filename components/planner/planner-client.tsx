@@ -78,7 +78,7 @@ export function PlannerClient({ initialGoal, initialDaysPerWeek, initialEquipmen
           <select
             value={goal}
             onChange={(event) => setGoal(event.target.value)}
-            className="h-11 rounded-lg border border-muted bg-white px-3 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="h-11 rounded-lg border border-muted bg-background px-3 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             {goals.map((option) => (
               <option key={option.value} value={option.value}>
@@ -98,7 +98,7 @@ export function PlannerClient({ initialGoal, initialDaysPerWeek, initialEquipmen
               const parsed = Number(event.target.value);
               setDaysPerWeek(Number.isNaN(parsed) ? 1 : Math.min(Math.max(parsed, 1), 7));
             }}
-            className="h-11 rounded-lg border border-muted bg-white px-3 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="h-11 rounded-lg border border-muted bg-background px-3 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           />
         </label>
         <label className="flex flex-col gap-2">
@@ -106,7 +106,7 @@ export function PlannerClient({ initialGoal, initialDaysPerWeek, initialEquipmen
           <select
             value={equipment}
             onChange={(event) => setEquipment(event.target.value)}
-            className="h-11 rounded-lg border border-muted bg-white px-3 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="h-11 rounded-lg border border-muted bg-background px-3 text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             {equipmentOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -125,7 +125,7 @@ export function PlannerClient({ initialGoal, initialDaysPerWeek, initialEquipmen
         </Button>
       </div>
       {preview ? (
-        <div className="rounded-xl border border-muted bg-white/70 p-4 shadow-sm">
+        <div className="rounded-xl border border-muted bg-background/70 p-4 shadow-sm">
           <p className="text-sm font-semibold">Foreslået plan: {preview.planType.replaceAll('_', ' ')}</p>
           <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
             {preview.sets.map((set) => (

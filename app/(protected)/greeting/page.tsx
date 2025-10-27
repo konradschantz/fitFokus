@@ -1,7 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 import { db } from "@/lib/db";
+import noWorkOutLogged from "@/components/ui/noWorkOutLogged.png";
 
 export default async function GreetingPage() {
   const session = await getServerSession(authOptions);
@@ -64,7 +66,9 @@ export default async function GreetingPage() {
           </summary>
           <div className="mt-3 space-y-2">
             {!latestWorkout ? (
-              <p>Ingen træninger endnu</p>
+              <div className="flex items-center justify-center">
+                <Image src={noWorkOutLogged} alt="Ingen træninger endnu" />
+              </div>
             ) : latestWorkout.sets.length === 0 ? (
               <p>Ingen øvelser registreret</p>
             ) : (

@@ -53,7 +53,7 @@ export function TabsTrigger({ value, className, ...props }: React.ButtonHTMLAttr
       }}
       className={cn(
         'flex h-10 flex-1 items-center justify-center rounded-md px-3 text-sm font-medium transition',
-        isActive ? 'bg-white shadow text-foreground' : 'text-muted-foreground hover:text-foreground',
+        isActive ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground',
         className
       )}
       aria-pressed={isActive}

@@ -56,7 +56,7 @@ export function ExercisePicker({ exercises, onSelect }: ExercisePickerProps) {
                 }
               }}
               className={cn(
-                'flex w-full flex-col rounded-xl border border-muted bg-white/80 p-3 text-left shadow-sm transition hover:border-primary',
+                'flex w-full flex-col rounded-xl border border-muted bg-background/80 p-3 text-left shadow-sm transition hover:border-primary',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
               )}
             >

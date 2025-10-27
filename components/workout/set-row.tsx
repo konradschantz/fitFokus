@@ -25,7 +25,7 @@ type SetRowProps = {
 
 export function SetRow({ value, onChange, autoFocus }: SetRowProps) {
   return (
-    <div className="grid grid-cols-1 gap-4 rounded-xl border border-muted bg-white/70 p-3 shadow-sm sm:grid-cols-[1fr,auto,1fr,auto] sm:items-start">
+    <div className="grid grid-cols-1 gap-4 rounded-xl border border-muted bg-background/70 p-3 shadow-sm sm:grid-cols-[1fr,auto,1fr,auto] sm:items-start">
       <div className="text-base sm:text-sm min-w-0">
         <p className="font-semibold truncate">{value.exerciseName}</p>
         <p className="text-sm sm:text-xs text-muted-foreground">Mål: {value.targetReps} reps</p>

@@ -1,16 +1,17 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
+  darkMode: 'class',
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        background: 'hsl(0 0% 100%)',
-        foreground: 'hsl(215 25% 15%)',
-        muted: 'hsl(214 17% 92%)',
-        'muted-foreground': 'hsl(215 16% 45%)',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        muted: 'hsl(var(--muted))',
+        'muted-foreground': 'hsl(var(--muted-foreground))',
         primary: {
-          DEFAULT: 'hsl(220 90% 56%)',
+          DEFAULT: 'hsl(var(--primary))',
           foreground: '#fff',
         },
       },

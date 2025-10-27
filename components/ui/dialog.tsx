@@ -33,7 +33,7 @@ export function Dialog({ open, onOpenChange, children }: { open: boolean; onOpen
   return createPortal(
     <dialog
       ref={dialogRef}
-      className="w-full max-w-lg rounded-xl border border-muted bg-white/95 p-6 shadow-xl backdrop:bg-black/30"
+      className="w-full max-w-lg rounded-xl border border-muted bg-background/95 p-6 shadow-xl backdrop:bg-black/30"
       onClose={() => onOpenChange(false)}
     >
       {children}

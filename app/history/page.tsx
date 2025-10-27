@@ -32,7 +32,7 @@ export default async function HistoryPage() {
               return (
                 <div
                   key={workout.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-muted bg-white/70 p-4 shadow-sm"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-muted bg-background/70 p-4 shadow-sm"
                 >
                   <div>
                     <p className="font-semibold">{formatDate(new Date(workout.date))}</p>
@@ -56,7 +56,7 @@ export default async function HistoryPage() {
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           {progress.oneRepMaxTrends.map((trend) => (
-            <div key={trend.lift} className="flex flex-col gap-2 rounded-xl border border-muted bg-white/70 p-4 shadow-sm">
+            <div key={trend.lift} className="flex flex-col gap-2 rounded-xl border border-muted bg-background/70 p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold">{trend.lift}</p>
                 <p className="text-xs text-muted-foreground">

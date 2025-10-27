@@ -2,8 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background: 0 0% 100%;
+  --foreground: 215 25% 15%;
+  --muted: 214 17% 92%;
+  --muted-foreground: 215 16% 45%;
+  --primary: 220 90% 56%;
+}
+
+.dark {
+  --background: 222 25% 10%;
+  --foreground: 210 40% 98%;
+  --muted: 222 16% 18%;
+  --muted-foreground: 215 16% 72%;
+  --primary: 220 90% 56%;
+  color-scheme: dark;
+}
+
 body {
-  @apply bg-background text-foreground min-h-screen;
+  @apply bg-background text-foreground min-h-screen transition-colors duration-200;
 }
 
 a {

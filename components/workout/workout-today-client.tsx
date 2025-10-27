@@ -106,7 +106,7 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
           <SetRow key={`${set.exerciseId}-${index}`} value={set} onChange={(next) => updateSet(index, next)} autoFocus={index === nextIncompleteIndex} />
         ))}
       </div>
-      <div className="flex flex-col gap-4 rounded-xl border border-muted bg-white/70 p-4 shadow-sm">
+      <div className="flex flex-col gap-4 rounded-xl border border-muted bg-background/70 p-4 shadow-sm">
         <label className="text-base sm:text-sm font-semibold" htmlFor="note">
           Noter
         </label>
