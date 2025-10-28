@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { getExerciseImageSrc } from '@/components/workout/exercise-images';
 
 export type ExerciseLite = {
   id: string;
@@ -113,9 +114,14 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
                   <p className="text-xs text-muted-foreground">{ex.primaryMuscle ?? ex.category}</p>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4 p-0">
-                  <div className="overflow-hidden rounded-lg bg-muted/60">
+                  <div className="overflow-hidden rounded-lg bg-black">
                     <div className="aspect-video w-full">
-                      <img src="/exercise-placeholder.svg" alt={`${ex.name} billede`} className="h-full w-full object-cover" loading="lazy" />
+                      <img
+                        src={getExerciseImageSrc(ex.name) ?? '/exercise-placeholder.svg'}
+                        alt={`${ex.name} billede`}
+                        className="h-full w-full object-contain object-center"
+                        loading="lazy"
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -155,4 +161,3 @@ export function ExerciseCarousels({ exercises }: Props) {
     </div>
   );
 }
-

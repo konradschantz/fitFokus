@@ -83,29 +83,7 @@ export default async function WorkoutTodayPage() {
 
   return (
     <div className="space-y-10">
-      <section className="overflow-hidden rounded-3xl border border-primary/10 bg-gradient-to-br from-primary/15 via-background to-background p-6 sm:p-10">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Træning i dag</p>
-            
-          
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-center shadow-sm backdrop-blur">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Øvelser i dag</p>
-              <p className="text-lg font-semibold">{orderedSets.length}</p>
-            </div>
-            <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-center shadow-sm backdrop-blur">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Aktivt program</p>
-              <p className="text-lg font-semibold">{suggestion.planType.replaceAll('_', ' ')}</p>
-            </div>
-            <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-center shadow-sm backdrop-blur">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Dato</p>
-              <p className="text-lg font-semibold">{formatDate(new Date())}</p>
-            </div>
-          </div>
-        </div>
-      </section>
+     
 
       <WorkoutTodayClient
         workoutId={workout.id}

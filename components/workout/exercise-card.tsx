@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { NumberStepInput } from './number-step-input';
 import { cn } from '@/lib/utils';
 import type { EditableSet } from './types';
+import { getExerciseImageSrc } from './exercise-images';
 
 export type ExerciseCardProps = {
   value: EditableSet;
@@ -35,6 +36,17 @@ export function ExerciseCard({
           : 'border-muted/80 bg-background/80 opacity-60 scale-[0.98]'
       )}
     >
+      <div className="overflow-hidden rounded-t-xl bg-black -mx-6 -mt-6">
+        <div className="aspect-video w-full">
+          <img
+            src={getExerciseImageSrc(value.exerciseName) ?? '/exercise-placeholder.svg'}
+            alt={`${value.exerciseName} billede`}
+            className="h-full w-full object-contain object-center"
+            loading="lazy"
+          />
+        </div>
+      </div>
+
       <CardHeader className="gap-3 p-0">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -54,17 +66,6 @@ export function ExerciseCard({
       </CardHeader>
 
       <CardContent className="flex flex-1 flex-col gap-6 p-0">
-        <div className="overflow-hidden rounded-lg bg-muted/60">
-          <div className="aspect-video w-full">
-            <img
-              src="/exercise-placeholder.svg"
-              alt={`${value.exerciseName} billede`}
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <span className="text-sm font-semibold text-muted-foreground">Vægt (kg)</span>
@@ -118,4 +119,3 @@ export function ExerciseCard({
     </Card>
   );
 }
-

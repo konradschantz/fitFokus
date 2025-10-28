@@ -37,13 +37,17 @@ export const authOptions: NextAuthOptions = {
     },
     async redirect({ url, baseUrl }) {
       try {
-        const isRelative = url.startsWith("/");
-        const isSameOrigin = url.startsWith(baseUrl);
-        if (isRelative) return "/greeting";
-        if (isSameOrigin) return `${baseUrl}/greeting`;
+        // Always allow explicit navigation to login
+        if (url === "/login" || url.startsWith(`${baseUrl}/login`)) {
+          return `${baseUrl}/login`;
+        }
+        // Pass through same-origin and relative URLs. Middleware will handle auth-only routes.
+        if (url.startsWith(baseUrl)) return url;
+        if (url.startsWith("/")) return `${baseUrl}${url}`;
+        // Otherwise, fallback to baseUrl
         return baseUrl;
       } catch {
-        return `${baseUrl}/greeting`;
+        return `${baseUrl}/login`;
       }
     },
   },

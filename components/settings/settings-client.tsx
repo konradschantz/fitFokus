@@ -146,7 +146,7 @@ export function SettingsClient({ initialGoal, initialDaysPerWeek, initialEquipme
         </Button>
       </div>
       <div className="pt-2">
-        <Button onClick={() => signOut({ callbackUrl: '/' })} className="w-full">
+        <Button onClick={() => signOut({ callbackUrl: '/login' })} className="w-full">
           Log af
         </Button>
       </div>
