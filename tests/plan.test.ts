@@ -10,7 +10,7 @@ const exerciseMock = {
     if (!exerciseIds.has(name)) {
       exerciseIds.set(name, name.toLowerCase().replace(/\s+/g, '-'));
     }
-    return { id: exerciseIds.get(name)!, name };
+    return { id: exerciseIds.get(name)!, name, metric: 'kg_reps' };
   }),
 };
 const setMock = { findMany: vi.fn() };

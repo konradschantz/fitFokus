@@ -2,28 +2,58 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ExerciseCard } from './exercise-card';
-import type { EditableSet } from './types';
+import type { EditableSet, WorkoutProgramOption } from './types';
 import { Button } from '@/components/ui/button';
 import { RestTimer } from './rest-timer';
 import { useToast } from '@/components/ui/toast';
-// Notes UI removed
 import { cn } from '@/lib/utils';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 type WorkoutTodayClientProps = {
-  workoutId: string;
-  planType: string;
+  initialWorkoutId: string | null;
+  initialPlanType: string | null;
   initialSets: EditableSet[];
-  initialNote?: string | null;
+  programs: WorkoutProgramOption[];
 };
 
-export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNote }: WorkoutTodayClientProps) {
+type StartWorkoutResponseSet = {
+  id?: string;
+  exerciseId: string;
+  exerciseName: string;
+  orderIndex: number;
+  weight: number | null;
+  reps: number | null;
+  rpe: number | null;
+  completed: boolean;
+  targetReps: string;
+  notes?: string;
+  previousWeight?: number | null;
+  previousReps?: string | null;
+};
+
+type StartWorkoutResponse = {
+  workoutId: string;
+  planType: string;
+  note?: string | null;
+  sets: StartWorkoutResponseSet[];
+};
+
+export function WorkoutTodayClient({
+  initialWorkoutId,
+  initialPlanType,
+  initialSets,
+  programs,
+}: WorkoutTodayClientProps) {
+  const [workoutId, setWorkoutId] = useState<string | null>(initialWorkoutId);
+  const [planType, setPlanType] = useState<string | null>(initialPlanType);
   const [sets, setSets] = useState<EditableSet[]>(initialSets);
-  const [note] = useState(initialNote ?? '');
   const [isSaving, setIsSaving] = useState(false);
   const [activeIndex, setActiveIndex] = useState(() => {
     const firstIncomplete = initialSets.findIndex((set) => !set.completed);
     return firstIncomplete >= 0 ? firstIncomplete : 0;
   });
+  const [startingProgramId, setStartingProgramId] = useState<string | null>(null);
+  const [mode, setMode] = useState<'select' | 'workout'>(initialSets.length ? 'workout' : 'select');
   const { push } = useToast();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -43,6 +73,12 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
   const persistSets = useCallback(
     async (payloadSets: EditableSet[], options?: { silent?: boolean }) => {
       const { silent = false } = options ?? {};
+      if (!workoutId || !planType) {
+        if (!silent) {
+          push({ title: 'Vælg program', description: 'Start et program før du kan logge sæt.' });
+        }
+        return;
+      }
       try {
         if (!silent) setIsSaving(true);
         const response = await fetch('/api/sets/batch', {
@@ -63,7 +99,7 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
           }),
         });
         if (!response.ok) {
-          const data = await response.json();
+          const data = await response.json().catch(() => ({}));
           throw new Error(data.message ?? 'Ukendt fejl');
         }
         if (!silent) {
@@ -83,9 +119,9 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
   }, [persistSets, sets]);
 
   useEffect(() => {
-    // Only scroll the active card into view; avoid auto-focusing inputs
+    if (mode !== 'workout') return;
     scrollToCard(activeIndex);
-  }, [activeIndex, scrollToCard]);
+  }, [activeIndex, mode, scrollToCard]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -119,7 +155,6 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
       setSets((prev) => {
         const updated = prev.map((set, idx) => (idx === index ? { ...set, completed: !set.completed } : set));
         const justCompleted = updated[index]?.completed ?? false;
-        // If user marked this as completed, move to the next card in a loop
         if (justCompleted) {
           const next = (index + 1) % updated.length;
           setActiveIndex(next);
@@ -147,7 +182,6 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
       setActiveIndex((current) => {
         const len = sets.length;
         if (len === 0) return 0;
-        // Wrap like a carousel
         const next = (current + delta + len) % len;
         return next;
       });
@@ -155,8 +189,8 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
     [sets.length]
   );
 
-  // Basic swipe left/right support for touch devices
   useEffect(() => {
+    if (mode !== 'workout') return;
     const node = scrollerRef.current;
     if (!node) return;
     let startX = 0;
@@ -185,13 +219,102 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
       node.removeEventListener('touchstart', onTouchStart as any);
       node.removeEventListener('touchend', onTouchEnd as any);
     };
-  }, [navigateBy]);
+  }, [mode, navigateBy]);
+
+  const mapResponseSet = useCallback(
+    (set: StartWorkoutResponseSet): EditableSet => ({
+      id: set.id,
+      exerciseId: set.exerciseId,
+      exerciseName: set.exerciseName,
+      orderIndex: set.orderIndex,
+      weight: set.weight ?? null,
+      reps: set.reps ?? null,
+      rpe: set.rpe ?? null,
+      completed: set.completed ?? false,
+      targetReps: set.targetReps,
+      notes: set.notes ?? '',
+      previousWeight: set.previousWeight ?? null,
+      previousReps: set.previousReps ?? null,
+    }),
+    []
+  );
+
+  const handleStartProgram = useCallback(
+    async (programId: string) => {
+      setStartingProgramId(programId);
+      try {
+        const response = await fetch('/api/workout/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ planType: programId }),
+        });
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.message ?? 'Kunne ikke starte programmet');
+        }
+        const payload: StartWorkoutResponse = await response.json();
+        const nextSets = payload.sets.map((set) => mapResponseSet(set));
+        setSets(nextSets);
+        setWorkoutId(payload.workoutId);
+        setPlanType(payload.planType);
+        setMode('workout');
+        const firstIncomplete = nextSets.findIndex((set) => !set.completed);
+        setActiveIndex(firstIncomplete >= 0 ? firstIncomplete : 0);
+        push({ title: 'Program klar', description: 'Dine øvelser er genereret.' });
+      } catch (error) {
+        push({
+          title: 'Fejl',
+          description: error instanceof Error ? error.message : 'Kunne ikke starte programmet.',
+        });
+      } finally {
+        setStartingProgramId(null);
+      }
+    },
+    [mapResponseSet, push]
+  );
+
+  if (mode === 'select') {
+    return (
+      <div className="space-y-8">
+        <header className="space-y-2">
+          <h2 className="text-2xl font-semibold sm:text-3xl">Hvad vil du træne i dag?</h2>
+          <p className="text-sm text-muted-foreground">
+            Vælg et fokusområde for at få 6-8 øvelser, der matcher dit mål.
+          </p>
+        </header>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {programs.map((program) => (
+            <Card key={program.id} className="flex h-full flex-col justify-between border-muted/70">
+              <CardHeader>
+                <CardTitle className="text-xl">{program.title}</CardTitle>
+                <CardDescription>{program.subtitle}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{program.description}</p>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  className="w-full"
+                  onClick={() => handleStartProgram(program.id)}
+                  disabled={Boolean(startingProgramId)}
+                >
+                  {startingProgramId === program.id ? 'Genererer…' : 'Start program'}
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
       <header className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold sm:text-2xl">Dagens øvelser</h2>
+          <h2 className="text-xl font-semibold sm:text-2xl">
+            {planType ? `Dagens øvelser – ${planType}` : 'Dagens øvelser'}
+          </h2>
           <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {completedCount}/{sets.length} logget
           </span>
@@ -264,10 +387,8 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
         </div>
       </div>
 
-      {/** Notes section hidden per request */}
-
       <div className="flex flex-wrap items-center gap-3">
-        <Button onClick={handleSave} disabled={isSaving} className="min-w-[160px] h-12 text-base sm:text-sm">
+        <Button onClick={handleSave} disabled={isSaving || !workoutId} className="min-w-[160px] h-12 text-base sm:text-sm">
           {isSaving ? 'Gemmer…' : 'Log hele træningen'}
         </Button>
         <Button
@@ -283,5 +404,3 @@ export function WorkoutTodayClient({ workoutId, planType, initialSets, initialNo
     </div>
   );
 }
-
-

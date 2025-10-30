@@ -10,6 +10,8 @@ export type WorkoutDraft = {
     suggestedWeight: number | null;
     rpeTarget: number | null;
     orderIndex: number;
+    metric: string;
+    lastLogged: { weight: number | null; reps: string | null } | null;
   }>;
 };
 
@@ -48,23 +50,23 @@ function incrementForLift(name: string) {
   return largeLiftIncrement.has(name) ? 5 : 2.5;
 }
 
-async function determineNextPlanType(userId: string, basePlan: string) {
+async function determineNextPlanType(userId: string, basePlan: string): Promise<keyof typeof templates> {
   if (basePlan === 'full_body') return 'full_body';
   const sequence = getPlanTypeSequence(basePlan);
-  if (!sequence.length) return basePlan;
+  if (!sequence.length) return 'full_body';
   const lastWorkout = await prisma.workout.findFirst({
     where: { userId },
     orderBy: { date: 'desc' },
     select: { planType: true },
   });
-  if (!lastWorkout) return sequence[0];
+  if (!lastWorkout) return (sequence[0] ?? 'full_body') as keyof typeof templates;
   const currentIndex = sequence.indexOf(lastWorkout.planType);
-  if (currentIndex === -1) return sequence[0];
-  return sequence[(currentIndex + 1) % sequence.length];
+  const next = currentIndex === -1 ? sequence[0] : sequence[(currentIndex + 1) % sequence.length];
+  return (next ?? 'full_body') as keyof typeof templates;
 }
 
 async function fetchExerciseByName(name: string) {
-  return prisma.exercise.findUnique({ where: { name } });
+  return prisma.exercise.findUnique({ where: { name }, select: { id: true, name: true, metric: true } });
 }
 
 type SetHistory = {
@@ -102,7 +104,8 @@ async function getLastSetHistories(userId: string, exerciseId: string, limit: nu
     }));
 }
 
-function computeSuggestedWeight(name: string, histories: SetHistory[]) {
+function computeSuggestedWeight(name: string, metric: string, histories: SetHistory[]) {
+  if (metric !== 'kg_reps') return null;
   if (name.toLowerCase().includes('pull-up')) {
     return null;
   }
@@ -125,7 +128,10 @@ function computeSuggestedWeight(name: string, histories: SetHistory[]) {
   return Math.round(suggested * 2) / 2;
 }
 
-export async function suggestNextWorkout(userId: string): Promise<WorkoutDraft> {
+export async function suggestNextWorkout(
+  userId: string,
+  options?: { planType?: string }
+): Promise<WorkoutDraft> {
   const settings = await prisma.userSettings.findUnique({ where: { userId } });
   const planPreference = settings?.lastPlanType;
   let planGroup: 'full_body' | 'upper_lower' | 'push_pull_legs' = 'full_body';
@@ -134,10 +140,14 @@ export async function suggestNextWorkout(userId: string): Promise<WorkoutDraft> 
     else if (settings.daysPerWeek <= 4) planGroup = 'upper_lower';
     else planGroup = 'push_pull_legs';
   }
-  const planType =
-    planPreference && planPreference in templates
-      ? (planPreference as keyof typeof templates)
-      : await determineNextPlanType(userId, planGroup);
+  let planType: keyof typeof templates;
+  if (options?.planType && options.planType in templates) {
+    planType = options.planType as keyof typeof templates;
+  } else if (planPreference && planPreference in templates) {
+    planType = planPreference as keyof typeof templates;
+  } else {
+    planType = await determineNextPlanType(userId, planGroup);
+  }
   const computedPlanType = planType as keyof typeof templates;
   const exercises = templates[computedPlanType] ?? templates.full_body;
   const resolved = await Promise.all(
@@ -147,7 +157,19 @@ export async function suggestNextWorkout(userId: string): Promise<WorkoutDraft> 
         throw new Error(`Øvelsen ${exerciseName} findes ikke i databasen. Kør prisma seed.`);
       }
       const histories = await getLastSetHistories(userId, exercise.id, 2);
-      const suggestedWeight = computeSuggestedWeight(exercise.name, histories);
+      const suggestedWeight = computeSuggestedWeight(exercise.name, exercise.metric, histories);
+      const last = histories[0];
+      const lastLogged = last
+        ? {
+            weight: last.weight ?? null,
+            reps:
+              last.minReps === 0 && last.maxReps === 0
+                ? null
+                : last.minReps === last.maxReps
+                  ? `${last.maxReps} reps`
+                  : `${last.minReps}-${last.maxReps} reps`,
+          }
+        : null;
       return {
         exerciseId: exercise.id,
         exerciseName: exercise.name,
@@ -155,6 +177,8 @@ export async function suggestNextWorkout(userId: string): Promise<WorkoutDraft> 
         suggestedWeight,
         rpeTarget: 7,
         orderIndex: index,
+        metric: exercise.metric,
+        lastLogged,
       };
     })
   );
