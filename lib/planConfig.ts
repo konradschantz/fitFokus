@@ -31,6 +31,13 @@ export const templates = {
   ],
   legs: ['Squat', 'Deadlift', 'Leg Extension'],
   cardio: ['Cycling (Stationary)', 'Treadmill Run'],
+  yoga: [
+    'Sun Salutation A',
+    'Downward Dog',
+    'Warrior II',
+    'Tree Pose',
+    "Child's Pose",
+  ],
 } as const;
 
 export const largeLiftIncrement = new Set([

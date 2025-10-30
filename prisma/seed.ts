@@ -106,6 +106,63 @@ async function main() {
       primaryMuscle: "Cardio",
       metric: "duration_min_distance_m",
     },
+    // Yoga category
+    {
+      name: "Sun Salutation A",
+      category: "Yoga",
+      equipment: "Mat",
+      primaryMuscle: "Full Body",
+      metric: "duration_min",
+    },
+    {
+      name: "Downward Dog",
+      category: "Yoga",
+      equipment: "Mat",
+      primaryMuscle: "Back",
+      metric: "duration_min",
+    },
+    {
+      name: "Warrior II",
+      category: "Yoga",
+      equipment: "Mat",
+      primaryMuscle: "Legs",
+      metric: "duration_min",
+    },
+    {
+      name: "Tree Pose",
+      category: "Yoga",
+      equipment: "Mat",
+      primaryMuscle: "Balance",
+      metric: "duration_min",
+    },
+    {
+      name: "Child's Pose",
+      category: "Yoga",
+      equipment: "Mat",
+      primaryMuscle: "Back",
+      metric: "duration_min",
+    },
+    {
+      name: "Cat-Cow Stretch",
+      category: "Yoga",
+      equipment: "Mat",
+      primaryMuscle: "Spine",
+      metric: "duration_min",
+    },
+    {
+      name: "Cobra Pose",
+      category: "Yoga",
+      equipment: "Mat",
+      primaryMuscle: "Back",
+      metric: "duration_min",
+    },
+    {
+      name: "Pigeon Pose",
+      category: "Yoga",
+      equipment: "Mat",
+      primaryMuscle: "Hips",
+      metric: "duration_min",
+    },
   ] as const;
 
   await Promise.all(

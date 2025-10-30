@@ -47,7 +47,7 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-semibold">Velkommen {userName}.</h1>
         <div>
           <Link
-            href="/workout/today"
+            href="/workout/today?select=1"
             className="inline-flex items-center justify-center rounded-2xl bg-primary px-4 py-2 text-primary-foreground shadow transition hover:bg-primary/90"
           >
             Start træning
@@ -90,3 +90,4 @@ export default async function DashboardPage() {
     </main>
   );
 }
+

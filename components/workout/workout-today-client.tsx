@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import { ExerciseCard } from './exercise-card';
 import type { EditableSet, WorkoutProgramOption } from './types';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,16 @@ import { RestTimer } from './rest-timer';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+
+// Kategori-billeder (male/female)
+import upperMale from '@/components/ui/workoutCategori/maleUpperbodyCat.png';
+import upperFemale from '@/components/ui/workoutCategori/upperBodyFemaleCat.png';
+import legsMale from '@/components/ui/workoutCategori/maleLowerBodyCat.png';
+import legsFemale from '@/components/ui/workoutCategori/legCat.png';
+import cardioMale from '@/components/ui/workoutCategori/cardioMaleCat.png';
+import cardioFemale from '@/components/ui/workoutCategori/cardioFemaleCat.png';
+import yogaMale from '@/components/ui/workoutCategori/yogaMaleCat.png';
+import yogaFemale from '@/components/ui/workoutCategori/femaleYogaCat.png';
 
 type WorkoutTodayClientProps = {
   initialWorkoutId: string | null;
@@ -54,6 +65,11 @@ export function WorkoutTodayClient({
   });
   const [startingProgramId, setStartingProgramId] = useState<string | null>(null);
   const [mode, setMode] = useState<'select' | 'workout'>(initialSets.length ? 'workout' : 'select');
+  const [gender, setGender] = useState<'male' | 'female'>(() => {
+    if (typeof window === 'undefined') return 'female';
+    const stored = window.localStorage.getItem('userGender');
+    return stored === 'male' || stored === 'female' ? (stored as 'male' | 'female') : 'female';
+  });
   const { push } = useToast();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -282,8 +298,39 @@ export function WorkoutTodayClient({
             Vælg et fokusområde for at få 6-8 øvelser, der matcher dit mål.
           </p>
         </header>
+        <div className="flex items-center gap-2 pt-1">
+          <span className="text-xs text-muted-foreground">Billedvalg:</span>
+          <div className="inline-flex rounded-md border p-0.5">
+            <button
+              type="button"
+              className={cn(
+                'px-2 py-1 text-xs rounded-sm',
+                gender === 'female' ? 'bg-muted text-foreground' : 'text-muted-foreground'
+              )}
+              onClick={() => {
+                setGender('female');
+                if (typeof window !== 'undefined') window.localStorage.setItem('userGender', 'female');
+              }}
+            >
+              Kvinde
+            </button>
+            <button
+              type="button"
+              className={cn(
+                'px-2 py-1 text-xs rounded-sm',
+                gender === 'male' ? 'bg-muted text-foreground' : 'text-muted-foreground'
+              )}
+              onClick={() => {
+                setGender('male');
+                if (typeof window !== 'undefined') window.localStorage.setItem('userGender', 'male');
+              }}
+            >
+              Mand
+            </button>
+          </div>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {programs.map((program) => (
+          {false && programs.map((program) => (
             <Card key={program.id} className="flex h-full flex-col justify-between border-muted/70">
               <CardHeader>
                 <CardTitle className="text-xl">{program.title}</CardTitle>
@@ -303,6 +350,69 @@ export function WorkoutTodayClient({
               </CardFooter>
             </Card>
           ))}
+          {programs.map((program) => {
+            const levelColor =
+              program.level === 'Beginner'
+                ? 'bg-emerald-600'
+                : program.level === 'Advanced'
+                ? 'bg-red-600'
+                : 'bg-amber-500';
+            return (
+              <Card key={program.id} className="flex h-full flex-col justify-between border-muted/70 overflow-hidden">
+                <div className="relative -mx-4 -mt-4 h-36 w-auto sm:h-40">
+                  {
+                    (() => {
+                      const id = program.id as 'upper' | 'legs' | 'cardio' | 'yoga' | string;
+                      const maleMap: Record<string, any> = {
+                        upper: upperMale,
+                        legs: legsMale,
+                        cardio: cardioMale,
+                        yoga: yogaMale,
+                      };
+                      const femaleMap: Record<string, any> = {
+                        upper: upperFemale,
+                        legs: legsFemale,
+                        cardio: cardioFemale,
+                        yoga: yogaFemale,
+                      };
+                      const src = (gender === 'male' ? maleMap[id] : femaleMap[id]) ?? maleMap['upper'];
+                      return (
+                        <Image src={src} alt="Workout preview" fill className="object-cover" sizes="(max-width: 640px) 100vw, 33vw" />
+                      );
+                    })()
+                  }
+                  {program.level && (
+                    <span
+                      className={`absolute right-3 top-3 rounded-full px-2 py-1 text-xs font-semibold text-white shadow ${levelColor}`}
+                    >
+                      {program.level}
+                    </span>
+                  )}
+                </div>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xl">{program.title}</CardTitle>
+                  <CardDescription>{program.subtitle}</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <p className="text-sm text-muted-foreground">{program.description}</p>
+                  <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
+                    <span className="inline-flex items-center gap-1">⏱ {program.durationMin ?? 30} min</span>
+                    <span className="inline-flex items-center gap-1">🔥 {program.calories ?? 200} kcal</span>
+                    <span className="inline-flex items-center gap-1">🏋️ {program.exerciseCount ?? 8} øvelser</span>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button
+                    className="w-full"
+                    onClick={() => handleStartProgram(program.id)}
+                    disabled={Boolean(startingProgramId)}
+                  >
+                    {startingProgramId === program.id ? 'Genererer…' : 'Start program'}
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       </div>
     );

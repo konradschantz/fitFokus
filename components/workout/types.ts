@@ -18,4 +18,9 @@ export type WorkoutProgramOption = {
   title: string;
   subtitle: string;
   description: string;
+  imageUrl?: string;
+  level?: 'Beginner' | 'Intermediate' | 'Advanced';
+  durationMin?: number;
+  calories?: number;
+  exerciseCount?: number;
 };

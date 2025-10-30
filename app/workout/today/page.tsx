@@ -26,6 +26,61 @@ const PROGRAM_OPTIONS: WorkoutProgramOption[] = [
   },
 ];
 
+// Visuelt rigere kort med billede og metadata
+const ENHANCED_PROGRAM_OPTIONS: WorkoutProgramOption[] = [
+  {
+    id: 'upper',
+    title: 'Overkrop',
+    subtitle: 'Generer upper body program',
+    description: 'Fokus på bryst, skuldre og ryg med pres, rows og trækøvelser.',
+    imageUrl:
+      'https://images.unsplash.com/photo-1534367610401-9f625f525bb1?q=80&w=1600&auto=format&fit=crop',
+    level: 'Intermediate',
+    durationMin: 45,
+    calories: 420,
+    exerciseCount: 8,
+  },
+  {
+    id: 'legs',
+    title: 'Underkrop',
+    subtitle: 'Generer leg muscles program',
+    description: 'Skru op for squat-, lår- og baglårsarbejdet med tunge benøvelser.',
+    imageUrl:
+      'https://images.unsplash.com/photo-1571907480495-3b319147d3bd?q=80&w=1600&auto=format&fit=crop',
+    level: 'Intermediate',
+    durationMin: 40,
+    calories: 400,
+    exerciseCount: 8,
+  },
+  {
+    id: 'cardio',
+    title: 'Cardio',
+    subtitle: 'Generer cardio program',
+    description: 'Forbrænd kalorier og boost konditionen med simple maskinintervaller.',
+    imageUrl:
+      'https://images.unsplash.com/photo-1583454110551-21f2fa2a125c?q=80&w=1600&auto=format&fit=crop',
+    level: 'Advanced',
+    durationMin: 25,
+    calories: 380,
+    exerciseCount: 6,
+  },
+];
+
+// Tilføj Yoga som ekstra kategori med metadata
+const ALL_PROGRAM_OPTIONS: WorkoutProgramOption[] = [
+  ...ENHANCED_PROGRAM_OPTIONS,
+  {
+    id: 'yoga',
+    title: 'Yoga',
+    subtitle: 'Rolig mobilitet og balance',
+    description: 'Udstrækning og balance med grundlæggende flow og statiske stillinger.',
+    level: 'Beginner',
+    durationMin: 30,
+    calories: 180,
+    exerciseCount: 10,
+  },
+];
+
 async function getActiveWorkout(userId: string) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -40,7 +95,11 @@ async function getActiveWorkout(userId: string) {
   return null;
 }
 
-export default async function WorkoutTodayPage() {
+export default async function WorkoutTodayPage({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
   // 1) Få et rigtigt id (med await) og bekræft at det findes i DB
   const userId = await getOrCreateUserId();
 
@@ -51,7 +110,8 @@ export default async function WorkoutTodayPage() {
     throw new Error('User not found for resolved userId — check auth & DATABASE_URL');
   }
 
-  const workout = await getActiveWorkout(userId);
+  const forceSelect = Boolean(searchParams?.select);
+  const workout = forceSelect ? null : await getActiveWorkout(userId);
 
   let orderedSets: EditableSet[] = [];
   let planType: string | null = null;
@@ -108,7 +168,7 @@ export default async function WorkoutTodayPage() {
         initialWorkoutId={workoutId}
         initialPlanType={planType}
         initialSets={orderedSets}
-        programs={PROGRAM_OPTIONS}
+        programs={ALL_PROGRAM_OPTIONS}
       />
     </div>
   );

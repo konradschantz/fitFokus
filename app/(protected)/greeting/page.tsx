@@ -26,7 +26,7 @@ export default async function GreetingPage() {
       <section className="space-y-4">
         <h1 className="text-2xl font-semibold">Velkommen {userName}.</h1>
         <Link
-          href="/workout/today"
+          href="/workout/today?select=1"
           className="block group rounded-2xl overflow-hidden border border-muted shadow-sm relative"
         >
           <Image src={startWorkoutImg} alt="Start træning" priority className="h-auto w-full" />
@@ -40,4 +40,3 @@ export default async function GreetingPage() {
     </main>
   );
 }
-
