@@ -1,30 +1,17 @@
-// app/workout/today/page.tsx
-import { prisma } from '@/lib/db';
-import { getOrCreateUserId } from '@/lib/auth';
-import { suggestNextWorkout } from '@/lib/plan';
-import { WorkoutTodayClient } from '@/components/workout/workout-today-client';
-import type { EditableSet, WorkoutProgramOption } from '@/components/workout/types';
+export const dynamic = 'force-dynamic';
 
-const PROGRAM_OPTIONS: WorkoutProgramOption[] = [
-  {
-    id: 'upper',
-    title: 'Overkrop',
-    subtitle: 'Generer upper body program',
-    description: 'Fokus på bryst, skuldre og ryg med press, rows og trækøvelser.',
-  },
-  {
-    id: 'legs',
-    title: 'Underkrop',
-    subtitle: 'Generer leg muscles program',
-    description: 'Skru op for squat-, lår- og baglårsarbejdet med tunge benøvelser.',
-  },
-  {
-    id: 'cardio',
-    title: 'Cardio',
-    subtitle: 'Generer cardio program',
-    description: 'Forbrænd kalorier og boost konditionen med simple maskinintervaller.',
-  },
-];
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import { getOrCreateUserId } from '@/lib/auth';
+import { prisma } from '@/lib/db';
+import { suggestNextWorkout } from '@/lib/plan';
+import { templates } from '@/lib/planConfig';
+
+const startWorkoutSchema = z.object({
+  planType: z
+    .string({ required_error: 'Plan type er påkrævet' })
+    .refine((value) => value in templates, { message: 'Ukendt plan type' }),
+});
 
 async function getActiveWorkout(userId: string) {
   const today = new Date();
@@ -40,28 +27,34 @@ async function getActiveWorkout(userId: string) {
   return null;
 }
 
-export default async function WorkoutTodayPage() {
-  // 1) Få et rigtigt id (med await) og bekræft at det findes i DB
-  const userId = await getOrCreateUserId();
+export async function POST(request: Request) {
+  try {
+    const userId = await getOrCreateUserId();
+    const body = await request.json();
+    const { planType } = startWorkoutSchema.parse(body);
 
-  // Hårdfør sanity check – hvis dette fejler, peger du på en anden DB eller får et forkert id retur
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true } });
-  if (!user) {
-    console.error('Resolved userId not found in DB:', { userId });
-    throw new Error('User not found for resolved userId — check auth & DATABASE_URL');
-  }
+    let workout = await getActiveWorkout(userId);
+    if (!workout) {
+      workout = await prisma.workout.create({
+        data: {
+          User: { connect: { id: userId } },
+          planType,
+          date: new Date(),
+        },
+        include: { sets: { include: { Exercise: true } } },
+      });
+    } else if (workout.planType !== planType) {
+      workout = await prisma.workout.update({
+        where: { id: workout.id },
+        data: { planType },
+        include: { sets: { include: { Exercise: true } } },
+      });
+    }
 
-  const workout = await getActiveWorkout(userId);
-
-  let orderedSets: EditableSet[] = [];
-  let planType: string | null = null;
-  let workoutId: string | null = null;
-  if (workout) {
-    workoutId = workout.id;
-    planType = workout.planType;
-    const suggestion = await suggestNextWorkout(userId, { planType: workout.planType });
+    const suggestion = await suggestNextWorkout(userId, { planType });
     const existingSets = workout.sets.sort((a, b) => a.orderIndex - b.orderIndex);
     const suggestionByExercise = new Map(suggestion.sets.map((item) => [item.exerciseId, item]));
+
     const initialSets = suggestion.sets.map((set, index) => {
       const existing = existingSets.find((item) => item.orderIndex === index || item.exerciseId === set.exerciseId);
       return {
@@ -99,18 +92,19 @@ export default async function WorkoutTodayPage() {
       previousReps: suggestionByExercise.get(set.exerciseId)?.lastLogged?.reps ?? null,
     }));
 
-    orderedSets = [...initialSets, ...extraSets].sort((a, b) => a.orderIndex - b.orderIndex);
-  }
+    const orderedSets = [...initialSets, ...extraSets].sort((a, b) => a.orderIndex - b.orderIndex);
 
-  return (
-    <div className="space-y-10">
-      <WorkoutTodayClient
-        initialWorkoutId={workoutId}
-        initialPlanType={planType}
-        initialSets={orderedSets}
-        programs={PROGRAM_OPTIONS}
-      />
-    </div>
-  );
+    return NextResponse.json({
+      workoutId: workout.id,
+      planType: suggestion.planType,
+      note: workout.note,
+      sets: orderedSets,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ message: 'Ugyldigt input', issues: error.flatten() }, { status: 422 });
+    }
+    console.error(error);
+    return NextResponse.json({ message: 'Kunne ikke starte program' }, { status: 500 });
+  }
 }
-console.log("DB host:", (process.env.DATABASE_URL ?? "").split("@").pop()?.split("/")[0]);

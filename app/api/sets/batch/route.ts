@@ -16,7 +16,7 @@ const setSchema = z.object({
 });
 
 const payloadSchema = z.object({
-  workoutId: z.string().cuid(),
+  workoutId: z.string().min(1, 'Workout id er påkrævet'),
   planType: z.string().optional(),
   note: z.string().optional(),
   sets: z.array(setSchema).min(1),

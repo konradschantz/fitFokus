@@ -52,6 +52,12 @@ export function ExerciseCard({
           <div>
             <CardTitle className="text-xl sm:text-2xl">{value.exerciseName}</CardTitle>
             <p className="text-sm text-muted-foreground">Mål: {value.targetReps} reps</p>
+            {(value.previousWeight != null || value.previousReps) && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Sidst logget: {value.previousWeight != null ? `${value.previousWeight} kg` : '—'} •{' '}
+                {value.previousReps ?? '—'}
+              </p>
+            )}
           </div>
           <span
             className={cn(

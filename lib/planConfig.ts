@@ -29,7 +29,8 @@ export const templates = {
     'Pull-up',                   // was "Pull-ups"
     'Biceps Curl (EZ-bar)',      // was "Biceps Curl"
   ],
-  legs: ['Squat', 'Leg Extension'],
+  legs: ['Squat', 'Deadlift', 'Leg Extension'],
+  cardio: ['Cycling (Stationary)', 'Treadmill Run'],
 } as const;
 
 export const largeLiftIncrement = new Set([
