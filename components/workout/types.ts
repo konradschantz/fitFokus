@@ -9,4 +9,13 @@ export type EditableSet = {
   completed: boolean;
   targetReps: string;
   notes?: string;
+  previousWeight?: number | null;
+  previousReps?: string | null;
+};
+
+export type WorkoutProgramOption = {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
 };
