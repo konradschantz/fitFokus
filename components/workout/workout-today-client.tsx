@@ -477,7 +477,7 @@ export function WorkoutTodayClient({
               className={cn(
                 'w-[85vw] max-w-[380px] snap-center shrink-0 sm:w-[360px]',
                 'scroll-mx-4 transition duration-200',
-                index === activeIndex ? 'opacity-100 scale-100' : 'opacity-50 sm:opacity-70 scale-[0.98]'
+                index === activeIndex ? 'scale-100' : 'scale-[0.98]'
               )}
               onFocus={() => handleSelectCard(index)}
               onClick={() => handleSelectCard(index)}
@@ -493,8 +493,8 @@ export function WorkoutTodayClient({
             </div>
           ))}
         </div>
-        <div className="pointer-events-none absolute inset-y-0 left-0 right-0 bg-gradient-to-b from-transparent via-transparent to-background/60" />
-        <div className="absolute inset-y-0 left-0 flex items-center pl-1">
+        
+        <div className="absolute inset-y-0 left-0 hidden items-center pl-1 sm:flex">
           <Button
             type="button"
             variant="ghost"
@@ -506,7 +506,7 @@ export function WorkoutTodayClient({
             ‹
           </Button>
         </div>
-        <div className="absolute inset-y-0 right-0 flex items-center pr-1">
+        <div className="absolute inset-y-0 right-0 hidden items-center pr-1 sm:flex">
           <Button
             type="button"
             variant="ghost"

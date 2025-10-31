@@ -33,8 +33,8 @@ export function ExerciseCard({
       className={cn(
         'flex h-full min-h-[360px] flex-col justify-between gap-6 p-6 transition-all duration-200 sm:min-h-[380px]',
         isActive
-          ? 'border-primary/70 shadow-lg shadow-primary/10 opacity-100 scale-100'
-          : 'border-muted/80 bg-background/80 opacity-60 scale-[0.98]'
+          ? 'border-primary/70 shadow-lg shadow-primary/10 scale-100'
+          : 'border-muted/80 bg-background scale-[0.98]'
       )}
     >
       <div className="overflow-hidden rounded-t-xl bg-black -mx-6 -mt-6">
@@ -110,7 +110,12 @@ export function ExerciseCard({
         <Button
           type="button"
           onClick={onToggleComplete}
-          className="h-12 text-base"
+          className={cn(
+            'h-12 text-base opacity-100',
+            value.completed
+              ? 'border-emerald-600 text-emerald-600 hover:bg-emerald-600/10 disabled:!opacity-100'
+              : 'bg-emerald-600 text-white hover:bg-emerald-600/90 disabled:!opacity-100'
+          )}
           variant={value.completed ? 'outline' : 'default'}
           disabled={!value.completed && !canComplete}
         >
