@@ -49,6 +49,11 @@ type StartWorkoutResponse = {
   sets: StartWorkoutResponseSet[];
 };
 
+function formatReps(value: number | null): string | null {
+  if (value == null) return null;
+  return value === 1 ? '1 rep' : `${value} reps`;
+}
+
 export function WorkoutTodayClient({
   initialWorkoutId,
   initialPlanType,
@@ -58,7 +63,6 @@ export function WorkoutTodayClient({
   const [workoutId, setWorkoutId] = useState<string | null>(initialWorkoutId);
   const [planType, setPlanType] = useState<string | null>(initialPlanType);
   const [sets, setSets] = useState<EditableSet[]>(initialSets);
-  const [isSaving, setIsSaving] = useState(false);
   const [activeIndex, setActiveIndex] = useState(() => {
     const firstIncomplete = initialSets.findIndex((set) => !set.completed);
     return firstIncomplete >= 0 ? firstIncomplete : 0;
@@ -74,7 +78,6 @@ export function WorkoutTodayClient({
   const scrollerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const nextIncompleteIndex = useMemo(() => sets.findIndex((set) => !set.completed), [sets]);
   const completedCount = useMemo(() => sets.filter((set) => set.completed).length, [sets]);
 
   const scrollToCard = useCallback(
@@ -93,10 +96,9 @@ export function WorkoutTodayClient({
         if (!silent) {
           push({ title: 'Vælg program', description: 'Start et program før du kan logge sæt.' });
         }
-        return;
+        return false;
       }
       try {
-        if (!silent) setIsSaving(true);
         const response = await fetch('/api/sets/batch', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -121,18 +123,14 @@ export function WorkoutTodayClient({
         if (!silent) {
           push({ title: 'Gemt', description: 'Dine sæt er gemt.' });
         }
+        return true;
       } catch (error) {
         push({ title: 'Fejl', description: error instanceof Error ? error.message : 'Kunne ikke gemme.' });
-      } finally {
-        if (!silent) setIsSaving(false);
+        return false;
       }
     },
     [planType, push, workoutId]
   );
-
-  const handleSave = useCallback(() => {
-    void persistSets(sets);
-  }, [persistSets, sets]);
 
   useEffect(() => {
     if (mode !== 'workout') return;
@@ -152,15 +150,11 @@ export function WorkoutTodayClient({
           nextInput?.focus();
         }
       }
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
-        event.preventDefault();
-        void handleSave();
-      }
-    };
+      };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleSave]);
+  }, []);
 
   const updateSet = useCallback((index: number, next: EditableSet) => {
     setSets((prev) => prev.map((set, idx) => (idx === index ? next : set)));
@@ -168,26 +162,46 @@ export function WorkoutTodayClient({
 
   const handleToggleComplete = useCallback(
     (index: number) => {
-      setSets((prev) => {
-        const updated = prev.map((set, idx) => (idx === index ? { ...set, completed: !set.completed } : set));
-        const justCompleted = updated[index]?.completed ?? false;
-        if (justCompleted) {
-          const next = (index + 1) % updated.length;
-          setActiveIndex(next);
-        } else {
+      const currentSet = sets[index];
+      if (!currentSet) return;
+      const isCompleting = !currentSet.completed;
+      if (isCompleting && (currentSet.weight == null || currentSet.reps == null)) {
+        push({
+          title: 'Tilføj vægt og reps',
+          description: 'Indtast både vægt og gentagelser før du markerer sættet som udført.',
+        });
+        return;
+      }
+
+      const previousWeightBefore = currentSet.previousWeight ?? null;
+      const previousRepsBefore = currentSet.previousReps ?? null;
+      const updatedSet: EditableSet = {
+        ...currentSet,
+        completed: !currentSet.completed,
+        previousWeight: isCompleting
+          ? currentSet.weight ?? currentSet.previousWeight ?? null
+          : previousWeightBefore,
+        previousReps: isCompleting
+          ? formatReps(currentSet.reps) ?? currentSet.previousReps ?? null
+          : previousRepsBefore,
+      };
+
+      setSets((prev) => prev.map((set, idx) => (idx === index ? updatedSet : set)));
+      const totalSets = sets.length || 1;
+      setActiveIndex(isCompleting ? ((index + 1) % totalSets) : index);
+
+      void (async () => {
+        const success = await persistSets([updatedSet], { silent: true });
+        if (!success) {
+          setSets((prev) =>
+            prev.map((set, idx) => (idx === index ? { ...currentSet, previousWeight: previousWeightBefore, previousReps: previousRepsBefore } : set))
+          );
           setActiveIndex(index);
         }
-        void persistSets(updated, { silent: true });
-        return updated;
-      });
+      })();
     },
-    [persistSets]
+    [persistSets, push, sets]
   );
-
-  const markNextSet = useCallback(() => {
-    if (nextIncompleteIndex < 0) return;
-    handleToggleComplete(nextIncompleteIndex);
-  }, [handleToggleComplete, nextIncompleteIndex]);
 
   const handleSelectCard = useCallback((index: number) => {
     setActiveIndex(index);
@@ -507,17 +521,6 @@ export function WorkoutTodayClient({
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button onClick={handleSave} disabled={isSaving || !workoutId} className="min-w-[160px] h-12 text-base sm:text-sm">
-          {isSaving ? 'Gemmer…' : 'Log hele træningen'}
-        </Button>
-        <Button
-          variant="outline"
-          onClick={markNextSet}
-          className="min-w-[160px] h-12 text-base sm:text-sm"
-          disabled={nextIncompleteIndex < 0}
-        >
-          Markér næste øvelse som udført
-        </Button>
         <RestTimer />
       </div>
     </div>
