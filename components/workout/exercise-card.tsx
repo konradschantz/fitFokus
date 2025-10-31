@@ -26,6 +26,7 @@ export function ExerciseCard({
   displayIndex,
 }: ExerciseCardProps) {
   const statusLabel = useMemo(() => (value.completed ? 'Udført' : 'Klar'), [value.completed]);
+  const canComplete = value.weight != null && value.reps != null;
 
   return (
     <Card
@@ -111,14 +112,19 @@ export function ExerciseCard({
           onClick={onToggleComplete}
           className="h-12 text-base"
           variant={value.completed ? 'outline' : 'default'}
+          disabled={!value.completed && !canComplete}
         >
           {value.completed ? 'Markér som ikke udført' : 'Markér som udført'}
         </Button>
         {value.completed ? (
           <p className="text-center text-xs text-muted-foreground">Øvelsen er logget – godt arbejde!</p>
-        ) : (
+        ) : canComplete ? (
           <p className="text-center text-xs text-muted-foreground">
             Log øvelsen som udført for at hoppe videre til næste kort.
+          </p>
+        ) : (
+          <p className="text-center text-xs text-muted-foreground">
+            Indtast både vægt og gentagelser før du markerer øvelsen som udført.
           </p>
         )}
       </div>
