@@ -2,7 +2,18 @@ import { cn } from '@/lib/utils';
 import { HTMLAttributes } from 'react';
 
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('rounded-xl border border-muted bg-background p-4 shadow-sm', className)} {...props} />;
+  return (
+    <div
+      className={cn(
+        // Base card style
+        'rounded-xl border border-muted bg-background p-4 shadow-sm',
+        // Subtle lift in dark mode
+        'dark:bg-background/80 dark:shadow-md dark:border-white/10',
+        className
+      )}
+      {...props}
+    />
+  );
 }
 
 export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {

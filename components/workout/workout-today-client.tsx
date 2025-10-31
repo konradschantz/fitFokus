@@ -358,8 +358,11 @@ export function WorkoutTodayClient({
                 ? 'bg-red-600'
                 : 'bg-amber-500';
             return (
-              <Card key={program.id} className="flex h-full flex-col justify-between border-muted/70 overflow-hidden">
-                <div className="relative -mx-4 -mt-4 h-36 w-auto sm:h-40">
+              <Card
+                key={program.id}
+                className="flex h-full flex-col justify-between border-muted/70 overflow-hidden shadow-md dark:bg-[#0f1f3a] dark:ring-1 dark:ring-white/10"
+              >
+                <div className="relative -mx-4 -mt-4 h-36 w-auto sm:h-40 bg-black">
                   {
                     (() => {
                       const id = program.id as 'upper' | 'legs' | 'cardio' | 'yoga' | string;
@@ -377,7 +380,13 @@ export function WorkoutTodayClient({
                       };
                       const src = (gender === 'male' ? maleMap[id] : femaleMap[id]) ?? maleMap['upper'];
                       return (
-                        <Image src={src} alt="Workout preview" fill className="object-cover" sizes="(max-width: 640px) 100vw, 33vw" />
+                        <Image
+                          src={src}
+                          alt="Workout preview"
+                          fill
+                          className="object-contain"
+                          sizes="(max-width: 640px) 100vw, 33vw"
+                        />
                       );
                     })()
                   }

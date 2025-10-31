@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 const navItems = [
-  { href: '/workout/today', label: 'Dagens traening' },
+  { href: '/workout/today?select=1', label: 'Dagens traening' },
   { href: '/history', label: 'Historik' },
   { href: '/exercises', label: 'Oevelser' },
   { href: '/settings', label: 'Indstillinger' },

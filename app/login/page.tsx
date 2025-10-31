@@ -11,11 +11,21 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.replace("/greeting");
+      router.replace("/workout/today");
     }
   }, [status, router]);
   return (
-    <main className="mx-auto w-full max-w-5xl p-6">
+    <>
+      <div
+        className="fixed inset-0 -z-10 md:hidden"
+        style={{
+          backgroundImage: `url(${loginTapet.src})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      />
+    <main className="mx-auto w-full max-w-5xl p-6 min-h-screen">
       <div className="grid items-stretch gap-6 md:grid-cols-2 md:min-h-[calc(100vh-8rem)]">
         <div className="relative hidden overflow-hidden rounded-2xl border border-muted shadow-sm md:block md:h-full">
           <Image src={loginTapet} alt="Velkomst" fill priority className="object-cover" sizes="(max-width: 768px) 0, 50vw" />
@@ -26,7 +36,7 @@ export default function LoginPage() {
           <button
             type="button"
             className="w-full inline-flex h-12 items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-5 text-base font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 sm:text-sm"
-            onClick={() => signIn("google", { callbackUrl: "/greeting" })}
+            onClick={() => signIn("google", { callbackUrl: "/workout/today" })}
             aria-label="Log ind med Google"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
@@ -40,5 +50,6 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+    </>
   );
 }
