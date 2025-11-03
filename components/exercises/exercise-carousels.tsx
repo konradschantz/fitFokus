@@ -23,6 +23,7 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
   const scrollerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const lastInteractionRef = useRef<'programmatic' | 'gesture'>('programmatic');
+  const activeIndexRef = useRef(0);
 
   const navigateBy = useCallback(
     (delta: number, source: 'programmatic' | 'gesture' = 'programmatic') => {
@@ -37,46 +38,78 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
   );
 
   useEffect(() => {
+    activeIndexRef.current = activeIndex;
+  }, [activeIndex]);
+
+  useEffect(() => {
     const node = cardRefs.current[activeIndex];
     if (!node) return;
 
     if (lastInteractionRef.current === 'gesture') {
-      lastInteractionRef.current = 'programmatic';
       return;
     }
 
     node.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }, [activeIndex]);
 
-  // Swipe support
   useEffect(() => {
-    const node = scrollerRef.current;
-    if (!node) return;
-    let startX = 0;
-    let startY = 0;
-    let startTime = 0;
-    const onTouchStart = (e: TouchEvent) => {
-      const t = e.touches[0];
-      startX = t.clientX;
-      startY = t.clientY;
-      startTime = Date.now();
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    let rafId = 0;
+
+    const updateActiveFromScroll = () => {
+      if (lastInteractionRef.current !== 'gesture') return;
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = window.requestAnimationFrame(() => {
+        const { scrollLeft, clientWidth } = scroller;
+        const center = scrollLeft + clientWidth / 2;
+        let closestIndex = activeIndexRef.current;
+        let minDistance = Number.POSITIVE_INFINITY;
+
+        cardRefs.current.forEach((card, index) => {
+          if (!card) return;
+          const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+          const distance = Math.abs(cardCenter - center);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestIndex = index;
+          }
+        });
+
+        if (closestIndex !== activeIndexRef.current) {
+          activeIndexRef.current = closestIndex;
+          setActiveIndex(closestIndex);
+        }
+      });
     };
-    const onTouchEnd = (e: TouchEvent) => {
-      const t = e.changedTouches[0];
-      const dx = t.clientX - startX;
-      const dy = t.clientY - startY;
-      const dt = Date.now() - startTime;
-      if (dt < 500 && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
-        navigateBy(dx < 0 ? 1 : -1, 'gesture');
-      }
+
+    const markGestureStart = () => {
+      lastInteractionRef.current = 'gesture';
     };
-    node.addEventListener('touchstart', onTouchStart, { passive: true });
-    node.addEventListener('touchend', onTouchEnd, { passive: true });
+    const markGestureEnd = () => {
+      lastInteractionRef.current = 'programmatic';
+    };
+
+    scroller.addEventListener('scroll', updateActiveFromScroll, { passive: true });
+    scroller.addEventListener('pointerdown', markGestureStart, { passive: true });
+    scroller.addEventListener('touchstart', markGestureStart, { passive: true });
+    window.addEventListener('pointerup', markGestureEnd, { passive: true });
+    window.addEventListener('pointercancel', markGestureEnd, { passive: true });
+    window.addEventListener('touchend', markGestureEnd, { passive: true });
+    window.addEventListener('touchcancel', markGestureEnd, { passive: true });
+
     return () => {
-      node.removeEventListener('touchstart', onTouchStart as any);
-      node.removeEventListener('touchend', onTouchEnd as any);
+      if (rafId) cancelAnimationFrame(rafId);
+      scroller.removeEventListener('scroll', updateActiveFromScroll);
+      scroller.removeEventListener('pointerdown', markGestureStart);
+      scroller.removeEventListener('touchstart', markGestureStart);
+      window.removeEventListener('pointerup', markGestureEnd);
+      window.removeEventListener('pointercancel', markGestureEnd);
+      window.removeEventListener('touchend', markGestureEnd);
+      window.removeEventListener('touchcancel', markGestureEnd);
     };
-  }, [navigateBy]);
+  }, [items.length]);
 
   if (items.length === 0) return null;
 
