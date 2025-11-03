@@ -79,6 +79,7 @@ export function WorkoutTodayClient({
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const completedCount = useMemo(() => sets.filter((set) => set.completed).length, [sets]);
+  const exerciseCount = useMemo(() => new Set(sets.map((s) => s.exerciseId)).size, [sets]);
 
   const scrollToCard = useCallback(
     (index: number) => {
@@ -407,7 +408,7 @@ export function WorkoutTodayClient({
                 </CardHeader>
                 <CardContent className="pt-0">
                   <p className="text-sm text-muted-foreground">{program.description}</p>
-                  <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground hidden">
                     
                  
                     <span className="inline-flex items-center gap-1">🏋️ {program.exerciseCount ?? 8} øvelser</span>
@@ -447,6 +448,11 @@ export function WorkoutTodayClient({
             >
               Generer nyt program
             </Button>
+            {sets.length > 0 && (
+              <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {exerciseCount} øvelser
+              </span>
+            )}
             <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {completedCount}/{sets.length} logget
             </span>
