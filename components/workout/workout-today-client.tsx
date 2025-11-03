@@ -260,6 +260,7 @@ export function WorkoutTodayClient({
       weight: set.weight ?? null,
       reps: set.reps ?? null,
       rpe: set.rpe ?? null,
+      sets: null,
       completed: set.completed ?? false,
       targetReps: set.targetReps,
       notes: set.notes ?? '',
@@ -309,7 +310,7 @@ export function WorkoutTodayClient({
         <header className="space-y-2">
           <h2 className="text-2xl font-semibold sm:text-3xl">Hvad vil du træne i dag?</h2>
           <p className="text-sm text-muted-foreground">
-            Vælg et fokusområde for at få 6-8 øvelser, der matcher dit mål.
+            Vælg et fokusområde for at få 6-12 øvelser, der matcher dit mål.
           </p>
         </header>
         <div className="flex items-center gap-2 pt-1">
@@ -407,8 +408,8 @@ export function WorkoutTodayClient({
                 <CardContent className="pt-0">
                   <p className="text-sm text-muted-foreground">{program.description}</p>
                   <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="inline-flex items-center gap-1">⏱ {program.durationMin ?? 30} min</span>
-                    <span className="inline-flex items-center gap-1">🔥 {program.calories ?? 200} kcal</span>
+                    
+                 
                     <span className="inline-flex items-center gap-1">🏋️ {program.exerciseCount ?? 8} øvelser</span>
                   </div>
                 </CardContent>
@@ -436,9 +437,20 @@ export function WorkoutTodayClient({
           <h2 className="text-xl font-semibold sm:text-2xl">
             {planType ? `Dagens øvelser – ${planType}` : 'Dagens øvelser'}
           </h2>
-          <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {completedCount}/{sets.length} logget
-          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => planType && handleStartProgram(planType)}
+              disabled={Boolean(startingProgramId) || !planType}
+            >
+              Generer nyt program
+            </Button>
+            <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {completedCount}/{sets.length} logget
+            </span>
+          </div>
         </div>
         <p className="text-sm text-muted-foreground">
           Swipe mellem kortene for at starte med den øvelse, du har mest lyst til.

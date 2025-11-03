@@ -148,14 +148,110 @@ export async function suggestNextWorkout(
   } else {
     planType = await determineNextPlanType(userId, planGroup);
   }
+
   const computedPlanType = planType as keyof typeof templates;
-  const exercises = templates[computedPlanType] ?? templates.full_body;
+
+  // Randomized selection: 6-12 exercises per plan type
+  const MIN_COUNT = 6;
+  const MAX_COUNT = 12;
+
+  function pickRandom<T>(arr: T[], n: number): T[] {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy.slice(0, Math.max(0, Math.min(n, copy.length)));
+  }
+
+  const allowedByPlan: Record<string, string[] | null> = {
+    upper: ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps'],
+    push: ['Chest', 'Shoulders', 'Triceps'],
+    pull: ['Back', 'Biceps'],
+    lower: ['Quads', 'Hamstrings', 'Glutes', 'Calves'],
+    legs: ['Quads', 'Hamstrings', 'Glutes', 'Calves'],
+    full_body: null,
+  };
+
+  let pool: Array<{ id: string; name: string; metric: string }> = [];
+  if (computedPlanType === 'cardio') {
+    pool = await prisma.exercise.findMany({
+      where: { category: 'Cardio' },
+      select: { id: true, name: true, metric: true },
+    });
+  } else if (computedPlanType === 'yoga') {
+    pool = await prisma.exercise.findMany({
+      where: { category: 'Yoga' },
+      select: { id: true, name: true, metric: true },
+    });
+  } else {
+    const allowed = allowedByPlan[computedPlanType] ?? null;
+    const primaryPool = await prisma.exercise.findMany({
+      where: {
+        category: 'Strength',
+        ...(allowed ? { primaryMuscle: { in: allowed } } : {}),
+      },
+      select: { id: true, name: true, metric: true },
+    });
+    if (primaryPool.length < MIN_COUNT) {
+      const anyStrength = await prisma.exercise.findMany({
+        where: { category: 'Strength' },
+        select: { id: true, name: true, metric: true },
+      });
+      const map = new Map(primaryPool.map((i) => [i.id, i]));
+      for (const m of anyStrength) map.set(m.id, m);
+      pool = Array.from(map.values());
+    } else {
+      pool = primaryPool;
+    }
+  }
+
+  // Fallback to static templates if DB has no matching entries
+  if (pool.length === 0) {
+    const names = templates[computedPlanType] ?? templates.full_body;
+    const resolved = await Promise.all(
+      names.map(async (exerciseName, index) => {
+        const exercise = await fetchExerciseByName(exerciseName);
+        if (!exercise) {
+          throw new Error('Exercise not found in DB. Run prisma seed.');
+        }
+        const histories = await getLastSetHistories(userId, exercise.id, 2);
+        const suggestedWeight = computeSuggestedWeight(exercise.name, exercise.metric, histories);
+        const last = histories[0];
+        const lastLogged = last
+          ? {
+              weight: last.weight ?? null,
+              reps:
+                last.minReps === 0 && last.maxReps === 0
+                  ? null
+                  : last.minReps === last.maxReps
+                    ? `${last.maxReps} reps`
+                    : `${last.minReps}-${last.maxReps} reps`,
+            }
+          : null;
+        return {
+          exerciseId: exercise.id,
+          exerciseName: exercise.name,
+          targetReps: `${TARGET_REP_RANGE.min}-${TARGET_REP_RANGE.max}`,
+          suggestedWeight,
+          rpeTarget: 7,
+          orderIndex: index,
+          metric: exercise.metric,
+          lastLogged,
+        };
+      })
+    );
+    return { planType, sets: resolved };
+  }
+
+  const count = Math.min(
+    pool.length,
+    Math.max(MIN_COUNT, Math.min(MAX_COUNT, Math.floor(Math.random() * (MAX_COUNT - MIN_COUNT + 1)) + MIN_COUNT))
+  );
+  const picked = pickRandom(pool, count);
+
   const resolved = await Promise.all(
-    exercises.map(async (exerciseName, index) => {
-      const exercise = await fetchExerciseByName(exerciseName);
-      if (!exercise) {
-        throw new Error(`Øvelsen ${exerciseName} findes ikke i databasen. Kør prisma seed.`);
-      }
+    picked.map(async (exercise, index) => {
       const histories = await getLastSetHistories(userId, exercise.id, 2);
       const suggestedWeight = computeSuggestedWeight(exercise.name, exercise.metric, histories);
       const last = histories[0];
@@ -231,3 +327,4 @@ export async function recordResult(input: RecordResultInput) {
     });
   });
 }
+

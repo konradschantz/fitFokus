@@ -6,6 +6,8 @@ export type EditableSet = {
   weight: number | null;
   reps: number | null;
   rpe: number | null;
+  // Antal sæt for denne øvelse (kun UI, ikke gemt i API endnu)
+  sets: number | null;
   completed: boolean;
   targetReps: string;
   notes?: string;

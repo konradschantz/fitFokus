@@ -53,10 +53,8 @@ export async function POST(request: Request) {
 
     const suggestion = await suggestNextWorkout(userId, { planType });
     const existingSets = workout.sets.sort((a, b) => a.orderIndex - b.orderIndex);
-    const suggestionByExercise = new Map(suggestion.sets.map((item) => [item.exerciseId, item]));
-
     const initialSets = suggestion.sets.map((set, index) => {
-      const existing = existingSets.find((item) => item.orderIndex === index || item.exerciseId === set.exerciseId);
+      const existing = existingSets.find((item) => item.exerciseId === set.exerciseId && item.orderIndex === index);
       return {
         id: existing?.id,
         exerciseId: set.exerciseId,
@@ -65,7 +63,7 @@ export async function POST(request: Request) {
         weight: existing?.weightKg ?? set.suggestedWeight ?? null,
         reps: existing?.reps ?? null,
         rpe: existing?.rpe ?? null,
-        completed: existing?.completed ?? false,
+        completed: false,
         targetReps: set.targetReps,
         notes: existing?.notes ?? '',
         previousWeight: set.lastLogged?.weight ?? null,
@@ -73,26 +71,7 @@ export async function POST(request: Request) {
       };
     });
 
-    const unmatched = existingSets.filter(
-      (existing) => !initialSets.some((set) => set.exerciseId === existing.exerciseId && set.orderIndex === existing.orderIndex)
-    );
-
-    const extraSets = unmatched.map((set) => ({
-      id: set.id,
-      exerciseId: set.exerciseId,
-      exerciseName: set.Exercise.name,
-      orderIndex: set.orderIndex,
-      weight: set.weightKg ?? null,
-      reps: set.reps ?? null,
-      rpe: set.rpe ?? null,
-      completed: set.completed,
-      targetReps: suggestionByExercise.get(set.exerciseId)?.targetReps ?? '8-12',
-      notes: set.notes ?? '',
-      previousWeight: suggestionByExercise.get(set.exerciseId)?.lastLogged?.weight ?? null,
-      previousReps: suggestionByExercise.get(set.exerciseId)?.lastLogged?.reps ?? null,
-    }));
-
-    const orderedSets = [...initialSets, ...extraSets].sort((a, b) => a.orderIndex - b.orderIndex);
+    const orderedSets = initialSets.sort((a, b) => a.orderIndex - b.orderIndex);
 
     return NextResponse.json({
       workoutId: workout.id,

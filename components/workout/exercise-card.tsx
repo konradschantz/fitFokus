@@ -73,7 +73,7 @@ export function ExerciseCard({
       </CardHeader>
 
       <CardContent className="flex flex-1 flex-col gap-6 p-0">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="space-y-2">
             <span className="text-sm font-semibold text-muted-foreground">Vægt (kg)</span>
             <NumberStepInput
@@ -85,6 +85,21 @@ export function ExerciseCard({
               inputProps={{
                 'data-set-input': 'true',
                 name: `weight-${value.orderIndex}`,
+                onFocus,
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <span className="text-sm font-semibold text-muted-foreground">Sæt</span>
+            <NumberStepInput
+              value={value.sets}
+              onChange={(sets) => onChange({ ...value, sets })}
+              step={1}
+              min={1}
+              placeholder="Sæt"
+              inputProps={{
+                'data-set-input': 'true',
+                name: `sets-${value.orderIndex}`,
                 onFocus,
               }}
             />
@@ -113,11 +128,10 @@ export function ExerciseCard({
           className={cn(
             'h-12 text-base opacity-100',
             value.completed
-              ? 'border-emerald-600 text-emerald-600 hover:bg-emerald-600/10 disabled:!opacity-100'
-              : 'bg-emerald-600 text-white hover:bg-emerald-600/90 disabled:!opacity-100'
+              ? 'border-emerald-600 text-emerald-600 hover:bg-emerald-600/10'
+              : 'bg-emerald-600 text-white hover:bg-emerald-600/90'
           )}
           variant={value.completed ? 'outline' : 'default'}
-          disabled={!value.completed && !canComplete}
         >
           {value.completed ? 'Markér som ikke udført' : 'Markér som udført'}
         </Button>
