@@ -365,12 +365,6 @@ export function WorkoutTodayClient({
             </Card>
           ))}
           {programs.map((program) => {
-            const levelColor =
-              program.level === 'Beginner'
-                ? 'bg-emerald-600'
-                : program.level === 'Advanced'
-                ? 'bg-red-600'
-                : 'bg-amber-500';
             return (
               <Card
                 key={program.id}
@@ -404,13 +398,7 @@ export function WorkoutTodayClient({
                       );
                     })()
                   }
-                  {program.level && (
-                    <span
-                      className={`absolute right-3 top-3 rounded-full px-2 py-1 text-xs font-semibold text-white shadow ${levelColor}`}
-                    >
-                      {program.level}
-                    </span>
-                  )}
+                  {/* Difficulty label removed */}
                 </div>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xl">{program.title}</CardTitle>
