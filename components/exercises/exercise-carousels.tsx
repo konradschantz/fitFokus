@@ -22,9 +22,11 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const lastInteractionRef = useRef<'programmatic' | 'gesture'>('programmatic');
 
   const navigateBy = useCallback(
-    (delta: number) => {
+    (delta: number, source: 'programmatic' | 'gesture' = 'programmatic') => {
+      lastInteractionRef.current = source;
       setActiveIndex((current) => {
         const len = items.length;
         if (len === 0) return 0;
@@ -36,7 +38,14 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
 
   useEffect(() => {
     const node = cardRefs.current[activeIndex];
-    node?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    if (!node) return;
+
+    if (lastInteractionRef.current === 'gesture') {
+      lastInteractionRef.current = 'programmatic';
+      return;
+    }
+
+    node.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
   }, [activeIndex]);
 
   // Swipe support
@@ -58,7 +67,7 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
       const dy = t.clientY - startY;
       const dt = Date.now() - startTime;
       if (dt < 500 && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
-        navigateBy(dx < 0 ? 1 : -1);
+        navigateBy(dx < 0 ? 1 : -1, 'gesture');
       }
     };
     node.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -76,10 +85,24 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
       <header className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">{title}</h3>
         <div className="flex items-center gap-2">
-          <Button type="button" variant="ghost" className="h-9 w-9 rounded-full border border-muted px-0" onClick={() => navigateBy(-1)} disabled={items.length <= 1} aria-label="Forrige">
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-9 w-9 rounded-full border border-muted px-0"
+            onClick={() => navigateBy(-1)}
+            disabled={items.length <= 1}
+            aria-label="Forrige"
+          >
             ‹
           </Button>
-          <Button type="button" variant="ghost" className="h-9 w-9 rounded-full border border-muted px-0" onClick={() => navigateBy(1)} disabled={items.length <= 1} aria-label="Næste">
+          <Button
+            type="button"
+            variant="ghost"
+            className="h-9 w-9 rounded-full border border-muted px-0"
+            onClick={() => navigateBy(1)}
+            disabled={items.length <= 1}
+            aria-label="Næste"
+          >
             ›
           </Button>
         </div>
@@ -106,7 +129,10 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
                 'scroll-mx-4 transition duration-200',
                 index === activeIndex ? 'opacity-100 scale-100' : 'opacity-60 sm:opacity-70 scale-[0.98]'
               )}
-              onClick={() => setActiveIndex(index)}
+              onClick={() => {
+                lastInteractionRef.current = 'programmatic';
+                setActiveIndex(index);
+              }}
             >
               <Card className={cn('flex h-full min-h-[300px] flex-col gap-4 p-4 transition-all duration-200', index === activeIndex ? 'border-primary/70 shadow-lg shadow-primary/10' : 'border-muted/80 bg-background/80')}>
                 <CardHeader className="gap-2 p-0">
