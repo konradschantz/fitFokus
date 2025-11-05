@@ -8,6 +8,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/auth';
 import { SessionProviderClient } from '@/components/providers/session-provider';
 import HeaderActions from '@/components/header/header-actions';
+import { ScreenWakeLock } from '@/components/providers/screen-wake-lock';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -39,6 +40,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         />
         <SessionProviderClient session={session}>
           <ToastProvider>
+            <ScreenWakeLock />
             <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-6 px-4 py-6">
               <header className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-muted bg-background/80 p-4 text-foreground shadow-sm">
                 <div className="flex items-center gap-2">
