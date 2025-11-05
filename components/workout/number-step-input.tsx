@@ -2,7 +2,7 @@
 
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { type InputHTMLAttributes } from 'react';
+import { type InputHTMLAttributes, type KeyboardEvent } from 'react';
 
 type NumberStepInputProps = {
   value: number | null;
@@ -16,6 +16,24 @@ type NumberStepInputProps = {
 };
 
 export function NumberStepInput({ value, onChange, step = 1, min, max, placeholder, className, inputProps }: NumberStepInputProps) {
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const inputs = Array.from(
+        document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-set-input]')
+      );
+      const currentIndex = inputs.findIndex((input) => input === event.currentTarget);
+      if (currentIndex >= 0) {
+        const nextInput = inputs[currentIndex + 1];
+        nextInput?.focus();
+      }
+    }
+
+    inputProps?.onKeyDown?.(event);
+  };
+
   return (
     <div className={cn('flex h-11 w-full items-center', className)}>
       <Input
@@ -34,6 +52,7 @@ export function NumberStepInput({ value, onChange, step = 1, min, max, placehold
         placeholder={placeholder}
         className="h-11 w-full min-w-0 text-base"
         {...inputProps}
+        onKeyDown={handleKeyDown}
       />
     </div>
   );

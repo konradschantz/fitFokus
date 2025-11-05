@@ -31,7 +31,7 @@ export function ExerciseCard({
   return (
     <Card
       className={cn(
-        'flex h-full min-h-[360px] flex-col justify-between gap-6 p-6 transition-all duration-200 sm:min-h-[380px]',
+        'flex h-full min-h-[360px] flex-col justify-between gap-6 p-6 transition-all duration-200 sm:min-h-[380px] transform-gpu will-change-transform',
         isActive
           ? 'border-primary/70 shadow-lg shadow-primary/10 scale-100'
           : 'border-muted/80 bg-background scale-[0.98]'
