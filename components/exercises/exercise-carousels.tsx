@@ -157,17 +157,20 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
               ref={(node) => {
                 cardRefs.current[index] = node;
               }}
-              className={cn(
-                'w-[85vw] max-w-[380px] snap-center shrink-0 sm:w-[360px]',
-                'scroll-mx-4 transition duration-200',
-                index === activeIndex ? 'opacity-100 scale-100' : 'opacity-60 sm:opacity-70 scale-[0.98]'
-              )}
+              className={cn('w-[85vw] max-w-[380px] snap-center shrink-0 sm:w-[360px]', 'scroll-mx-4')}
               onClick={() => {
                 lastInteractionRef.current = 'programmatic';
                 setActiveIndex(index);
               }}
             >
-              <Card className={cn('flex h-full min-h-[300px] flex-col gap-4 p-4 transition-all duration-200', index === activeIndex ? 'border-primary/70 shadow-lg shadow-primary/10' : 'border-muted/80 bg-background/80')}>
+              <Card
+                className={cn(
+                  'flex h-full min-h-[300px] flex-col gap-4 p-4 transition-all duration-200 transform-gpu will-change-transform',
+                  index === activeIndex
+                    ? 'border-primary/70 shadow-lg shadow-primary/10 opacity-100 scale-100'
+                    : 'border-muted/80 bg-background/80 opacity-60 sm:opacity-70 scale-[0.98]'
+                )}
+              >
                 <CardHeader className="gap-2 p-0">
                   <CardTitle className="text-xl">{ex.name}</CardTitle>
                   <p className="text-xs text-muted-foreground">{ex.primaryMuscle ?? ex.category}</p>

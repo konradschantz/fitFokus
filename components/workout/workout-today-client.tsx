@@ -140,18 +140,20 @@ export function WorkoutTodayClient({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Enter' && !(event.target as HTMLElement)?.closest('textarea')) {
-        event.preventDefault();
-        const inputs = Array.from(
-          document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-set-input]')
-        );
-        const currentIndex = inputs.findIndex((input) => input === event.target);
-        if (currentIndex >= 0) {
-          const nextInput = inputs[currentIndex + 1];
-          nextInput?.focus();
-        }
+      if (event.key !== 'Enter') return;
+      if (event.defaultPrevented) return;
+      if ((event.target as HTMLElement | null)?.closest('textarea')) return;
+
+      event.preventDefault();
+      const inputs = Array.from(
+        document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-set-input]')
+      );
+      const currentIndex = inputs.findIndex((input) => input === event.target);
+      if (currentIndex >= 0) {
+        const nextInput = inputs[currentIndex + 1];
+        nextInput?.focus();
       }
-      };
+    };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
@@ -480,11 +482,7 @@ export function WorkoutTodayClient({
               ref={(node) => {
                 cardRefs.current[index] = node;
               }}
-              className={cn(
-                'w-[85vw] max-w-[380px] snap-center shrink-0 sm:w-[360px]',
-                'scroll-mx-4 transition duration-200',
-                index === activeIndex ? 'scale-100' : 'scale-[0.98]'
-              )}
+              className={cn('w-[85vw] max-w-[380px] snap-center shrink-0 sm:w-[360px]', 'scroll-mx-4')}
               onFocus={() => handleSelectCard(index)}
               onClick={() => handleSelectCard(index)}
             >
