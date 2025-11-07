@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,16 +26,27 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
   const lastInteractionRef = useRef<'programmatic' | 'gesture'>('programmatic');
   const activeIndexRef = useRef(0);
 
+  const scrollToIndex = useCallback((index: number) => {
+    const scroller = scrollerRef.current;
+    const card = cardRefs.current[index];
+    if (!scroller || !card) return;
+
+    const offset = card.offsetLeft - (scroller.clientWidth - card.offsetWidth) / 2;
+    scroller.scrollTo({ left: Math.max(0, offset), behavior: 'smooth' });
+  }, []);
+
   const navigateBy = useCallback(
     (delta: number, source: 'programmatic' | 'gesture' = 'programmatic') => {
       lastInteractionRef.current = source;
       setActiveIndex((current) => {
         const len = items.length;
         if (len === 0) return 0;
-        return (current + delta + len) % len;
+        const nextIndex = (current + delta + len) % len;
+        window.requestAnimationFrame(() => scrollToIndex(nextIndex));
+        return nextIndex;
       });
     },
-    [items.length]
+    [items.length, scrollToIndex]
   );
 
   useEffect(() => {
@@ -42,21 +54,15 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
   }, [activeIndex]);
 
   useEffect(() => {
-    const node = cardRefs.current[activeIndex];
-    if (!node) return;
-
-    if (lastInteractionRef.current === 'gesture') {
-      return;
-    }
-
-    node.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-  }, [activeIndex]);
+    cardRefs.current = cardRefs.current.slice(0, items.length);
+  }, [items.length]);
 
   useEffect(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
 
     let rafId = 0;
+    let gestureEndTimeout: number | null = null;
 
     const updateActiveFromScroll = () => {
       if (lastInteractionRef.current !== 'gesture') return;
@@ -85,10 +91,19 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
     };
 
     const markGestureStart = () => {
+      if (gestureEndTimeout !== null) {
+        window.clearTimeout(gestureEndTimeout);
+        gestureEndTimeout = null;
+      }
       lastInteractionRef.current = 'gesture';
     };
     const markGestureEnd = () => {
-      lastInteractionRef.current = 'programmatic';
+      if (gestureEndTimeout !== null) {
+        window.clearTimeout(gestureEndTimeout);
+      }
+      gestureEndTimeout = window.setTimeout(() => {
+        lastInteractionRef.current = 'programmatic';
+      }, 150);
     };
 
     scroller.addEventListener('scroll', updateActiveFromScroll, { passive: true });
@@ -101,6 +116,9 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
+      if (gestureEndTimeout !== null) {
+        window.clearTimeout(gestureEndTimeout);
+      }
       scroller.removeEventListener('scroll', updateActiveFromScroll);
       scroller.removeEventListener('pointerdown', markGestureStart);
       scroller.removeEventListener('touchstart', markGestureStart);
@@ -161,6 +179,7 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
               onClick={() => {
                 lastInteractionRef.current = 'programmatic';
                 setActiveIndex(index);
+                scrollToIndex(index);
               }}
             >
               <Card
@@ -197,6 +216,7 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
 }
 
 export function ExerciseCarousels({ exercises }: Props) {
+  const [layout, setLayout] = useState<'carousel' | 'list'>('carousel');
   const groups = useMemo(() => {
     const legsSet = new Set(['Quads', 'Hamstrings', 'Glutes', 'Calves', 'Adductors', 'Abductors', 'Lower Body']);
     const upperSet = new Set(['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps', 'Forearms', 'Core', 'Upper Body']);
@@ -217,9 +237,82 @@ export function ExerciseCarousels({ exercises }: Props) {
   }, [exercises]);
 
   return (
-    <div className="space-y-8">
-      <ExerciseCarousel title="Ben" items={groups.legs} />
-      <ExerciseCarousel title="Overkrop" items={groups.upper} />
+    <div className="space-y-6">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+        <span className="text-sm text-muted-foreground sm:text-right">Vælg hvordan øvelserne vises:</span>
+        <div className="inline-flex items-center gap-1 rounded-full border border-muted bg-background p-1 text-xs">
+          <Button
+            type="button"
+            size="sm"
+            variant={layout === 'carousel' ? 'default' : 'ghost'}
+            className={cn(
+              'h-8 rounded-full px-3 font-medium transition-colors',
+              layout === 'carousel' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
+            )}
+            onClick={() => setLayout('carousel')}
+            aria-pressed={layout === 'carousel'}
+          >
+            Swipe
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={layout === 'list' ? 'default' : 'ghost'}
+            className={cn(
+              'h-8 rounded-full px-3 font-medium transition-colors',
+              layout === 'list' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
+            )}
+            onClick={() => setLayout('list')}
+            aria-pressed={layout === 'list'}
+          >
+            Liste
+          </Button>
+        </div>
+      </div>
+      {layout === 'carousel' ? (
+        <div className="space-y-8">
+          <ExerciseCarousel title="Ben" items={groups.legs} />
+          <ExerciseCarousel title="Overkrop" items={groups.upper} />
+        </div>
+      ) : (
+        <div className="space-y-8">
+          <ExerciseListSection title="Ben" items={groups.legs} />
+          <ExerciseListSection title="Overkrop" items={groups.upper} />
+        </div>
+      )}
     </div>
+  );
+}
+
+function ExerciseListSection({ title, items }: { title: string; items: ExerciseLite[] }) {
+  if (items.length === 0) return null;
+
+  return (
+    <section className="space-y-3">
+      <h3 className="text-lg font-semibold">{title}</h3>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {items.map((ex) => (
+          <Card key={ex.id} className="border-muted/70 bg-background/80">
+            <div className="flex items-center gap-4 p-4">
+              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md bg-black">
+                <img
+                  src={getExerciseImageSrc(ex.name) ?? '/exercise-placeholder.svg'}
+                  alt={`${ex.name} billede`}
+                  className="h-full w-full object-cover object-center"
+                  loading="lazy"
+                />
+              </div>
+              <div className="space-y-1">
+                <p className="text-base font-semibold leading-tight">{ex.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {ex.primaryMuscle ?? ex.category}
+                  {ex.equipment ? ` • ${ex.equipment}` : ''}
+                </p>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </section>
   );
 }
