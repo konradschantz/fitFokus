@@ -1,4 +1,4 @@
-'use client';
+﻿"use client";
 
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,8 +55,8 @@ export function ExerciseCard({
             <p className="text-sm text-muted-foreground">Mål: {value.targetReps} reps</p>
             {(value.previousWeight != null || value.previousReps) && (
               <p className="mt-1 text-xs text-muted-foreground">
-                Sidst logget: {value.previousWeight != null ? `${value.previousWeight} kg` : '—'} •{' '}
-                {value.previousReps ?? '—'}
+                Sidst logget: {value.previousWeight != null ? `${value.previousWeight} kg` : '–'} •{' '}
+                {value.previousReps ?? '–'}
               </p>
             )}
           </div>
@@ -73,9 +73,9 @@ export function ExerciseCard({
       </CardHeader>
 
       <CardContent className="flex flex-1 flex-col gap-6 p-0">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4">
           <div className="space-y-2">
-            <span className="text-sm font-semibold text-muted-foreground">Vægt (kg)</span>
+            <span className="text-base font-semibold text-muted-foreground">Vægt (kg)</span>
             <NumberStepInput
               value={value.weight}
               onChange={(weight) => onChange({ ...value, weight })}
@@ -86,11 +86,12 @@ export function ExerciseCard({
                 'data-set-input': 'true',
                 name: `weight-${value.orderIndex}`,
                 onFocus,
+                className: 'h-11 text-base',
               }}
             />
           </div>
           <div className="space-y-2">
-            <span className="text-sm font-semibold text-muted-foreground">Sæt</span>
+            <span className="text-base font-semibold text-muted-foreground">Sæt</span>
             <NumberStepInput
               value={value.sets}
               onChange={(sets) => onChange({ ...value, sets })}
@@ -101,11 +102,12 @@ export function ExerciseCard({
                 'data-set-input': 'true',
                 name: `sets-${value.orderIndex}`,
                 onFocus,
+                className: 'h-11 text-base',
               }}
             />
           </div>
           <div className="space-y-2">
-            <span className="text-sm font-semibold text-muted-foreground">Reps</span>
+            <span className="text-base font-semibold text-muted-foreground">Reps</span>
             <NumberStepInput
               value={value.reps}
               onChange={(reps) => onChange({ ...value, reps })}
@@ -115,6 +117,7 @@ export function ExerciseCard({
                 'data-set-input': 'true',
                 name: `reps-${value.orderIndex}`,
                 onFocus,
+                className: 'h-11 text-base',
               }}
             />
           </div>
@@ -133,10 +136,10 @@ export function ExerciseCard({
           )}
           variant={value.completed ? 'outline' : 'default'}
         >
-          {value.completed ? 'Markér som ikke udført' : 'Markér som udført'}
+          {value.completed ? 'Marker som ikke udført' : 'Marker som udført'}
         </Button>
         {value.completed ? (
-          <p className="text-center text-xs text-muted-foreground">Øvelsen er logget – godt arbejde!</p>
+          <p className="text-center text-xs text-muted-foreground">Øvelsen er logget — godt arbejde!</p>
         ) : canComplete ? (
           <p className="text-center text-xs text-muted-foreground">
             Log øvelsen som udført for at hoppe videre til næste kort.

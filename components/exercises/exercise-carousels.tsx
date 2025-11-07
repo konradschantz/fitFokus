@@ -216,7 +216,7 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
 }
 
 export function ExerciseCarousels({ exercises }: Props) {
-  const [layout, setLayout] = useState<'carousel' | 'list'>('carousel');
+  const [layout, setLayout] = useState<'carousel' | 'list' | 'accordion'>('carousel');
   const groups = useMemo(() => {
     const legsSet = new Set(['Quads', 'Hamstrings', 'Glutes', 'Calves', 'Adductors', 'Abductors', 'Lower Body']);
     const upperSet = new Set(['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps', 'Forearms', 'Core', 'Upper Body']);
@@ -267,6 +267,19 @@ export function ExerciseCarousels({ exercises }: Props) {
           >
             Liste
           </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={layout === 'accordion' ? 'default' : 'ghost'}
+            className={cn(
+              'h-8 rounded-full px-3 font-medium transition-colors',
+              layout === 'accordion' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
+            )}
+            onClick={() => setLayout('accordion')}
+            aria-pressed={layout === 'accordion'}
+          >
+            Accordion
+          </Button>
         </div>
       </div>
       {layout === 'carousel' ? (
@@ -274,10 +287,15 @@ export function ExerciseCarousels({ exercises }: Props) {
           <ExerciseCarousel title="Ben" items={groups.legs} />
           <ExerciseCarousel title="Overkrop" items={groups.upper} />
         </div>
-      ) : (
+      ) : layout === 'list' ? (
         <div className="space-y-8">
           <ExerciseListSection title="Ben" items={groups.legs} />
           <ExerciseListSection title="Overkrop" items={groups.upper} />
+        </div>
+      ) : (
+        <div className="space-y-8">
+          <ExerciseAccordionSection title="Ben" items={groups.legs} />
+          <ExerciseAccordionSection title="Overkrop" items={groups.upper} />
         </div>
       )}
     </div>
@@ -312,6 +330,60 @@ function ExerciseListSection({ title, items }: { title: string; items: ExerciseL
             </div>
           </Card>
         ))}
+      </div>
+    </section>
+  );
+}
+
+function ExerciseAccordionSection({ title, items }: { title: string; items: ExerciseLite[] }) {
+  const [open, setOpen] = useState<string | null>(null);
+  if (items.length === 0) return null;
+
+  return (
+    <section className="space-y-3">
+      <h3 className="text-lg font-semibold">{title}</h3>
+      <div className="space-y-2">
+        {items.map((ex) => {
+          const id = ex.id;
+          const isOpen = open === id;
+          return (
+            <div key={id} className="rounded-md border overflow-hidden">
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                onClick={() => setOpen(isOpen ? null : id)}
+                className={cn(
+                  'w-full flex items-center justify-between gap-3 px-3 py-2 text-left',
+                  isOpen ? 'bg-muted/50' : 'bg-background'
+                )}
+              >
+                <span className="truncate pr-2 text-sm font-medium">{ex.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {ex.primaryMuscle ?? ex.category}
+                  {ex.equipment ? ` • ${ex.equipment}` : ''}
+                </span>
+              </button>
+              {isOpen && (
+                <div className="p-3">
+                  <Card className="border-muted/70 bg-background/80">
+                    <div className="flex flex-col gap-3">
+                      <div className="overflow-hidden rounded-md bg-black">
+                        <div className="aspect-video w-full">
+                          <img
+                            src={getExerciseImageSrc(ex.name) ?? '/exercise-placeholder.svg'}
+                            alt={`${ex.name} billede`}
+                            className="h-full w-full object-contain object-center"
+                            loading="lazy"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </section>
   );

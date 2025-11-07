@@ -1,9 +1,9 @@
-import { prisma } from '@/lib/db';
+﻿import { prisma } from '@/lib/db';
 import { getOrCreateUserId } from '@/lib/auth';
-import { formatDate } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TinyChart } from '@/components/history/tiny-chart';
 import { getProgress } from '@/lib/progress';
+import { ExerciseOverview, type ExerciseGroup } from '@/components/history/exercise-overview';
+import { WorkoutAccordion } from '@/components/history/workout-accordion';
 
 export default async function HistoryPage() {
   const userId = await getOrCreateUserId();
@@ -11,63 +11,55 @@ export default async function HistoryPage() {
     where: { userId },
     orderBy: { date: 'desc' },
     take: 10,
-    include: { sets: true },
+    include: { sets: { include: { Exercise: true } } },
   });
   const progress = await getProgress(userId);
+  // Build exercise overview grouped by exercise name from recent workouts
+  const exerciseMap = new Map<string, ExerciseGroup>();
+  for (const w of workouts) {
+    for (const s of w.sets) {
+      const name = (s as any).exerciseName ?? (s as any).Exercise?.name ?? 'Ukendt øvelse';
+      if (!exerciseMap.has(name)) {
+        exerciseMap.set(name, { name, entries: [] });
+      }
+      exerciseMap.get(name)!.entries.push({
+        date: w.date instanceof Date ? w.date.toISOString() : new Date(w.date as any).toISOString(),
+        weightKg: s.weightKg ?? null,
+        reps: s.reps ?? null,
+        completed: Boolean(s.completed),
+      });
+    }
+  }
+  // Sort entries per group by date desc
+  const exerciseGroups: ExerciseGroup[] = Array.from(exerciseMap.values()).map((g) => ({
+    ...g,
+    entries: g.entries.sort((a, b) => (a.date < b.date ? 1 : -1)),
+  }));
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Seneste træninger</CardTitle>
-          <p className="text-sm text-muted-foreground">Hold øje med volumen og 1RM-trend.</p>
+          <CardTitle>Tidligere træninger</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {workouts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Ingen registrerede workouts endnu.</p>
-          ) : (
-            workouts.map((workout) => {
-              const totalVolume = workout.sets.reduce((sum, set) => sum + (set.weightKg ?? 0) * (set.reps ?? 0), 0);
-              const completedSets = workout.sets.filter((set) => set.completed).length;
-              return (
-                <div
-                  key={workout.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-muted bg-background/70 p-4 shadow-sm"
-                >
-                  <div>
-                    <p className="font-semibold">{formatDate(new Date(workout.date))}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {workout.planType.replaceAll('_', ' ')} • {completedSets}/{workout.sets.length} sæt
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Total volume</p>
-                    <p className="text-lg font-semibold tabular-nums">{Math.round(totalVolume)} kg</p>
-                  </div>
-                </div>
-              );
-            })
-          )}
+        <CardContent>
+          <WorkoutAccordion
+            workouts={workouts.map((w) => ({
+              id: w.id,
+              date: w.date,
+              planType: w.planType,
+              sets: w.sets.map((s) => ({
+                orderIndex: s.orderIndex,
+                weightKg: s.weightKg,
+                reps: s.reps,
+                completed: s.completed,
+                Exercise: { name: (s as any).Exercise?.name ?? 'Ukendt øvelse' },
+              })),
+            }))}
+          />
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>1RM-estimat (Epley)</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
-          {progress.oneRepMaxTrends.map((trend) => (
-            <div key={trend.lift} className="flex flex-col gap-2 rounded-xl border border-muted bg-background/70 p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold">{trend.lift}</p>
-                <p className="text-xs text-muted-foreground">
-                  {trend.points.length ? `${trend.points.at(-1)?.value?.toFixed(1)} kg` : 'Ingen data'}
-                </p>
-              </div>
-              <TinyChart points={trend.points.map((point) => ({ label: point.date, value: point.value }))} />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      
     </div>
   );
 }
