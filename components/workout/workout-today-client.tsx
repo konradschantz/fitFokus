@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { ExerciseCard } from './exercise-card';
 import type { EditableSet, WorkoutProgramOption } from './types';
@@ -75,20 +75,9 @@ export function WorkoutTodayClient({
     return stored === 'male' || stored === 'female' ? (stored as 'male' | 'female') : 'female';
   });
   const { push } = useToast();
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const completedCount = useMemo(() => sets.filter((set) => set.completed).length, [sets]);
   const exerciseCount = useMemo(() => new Set(sets.map((s) => s.exerciseId)).size, [sets]);
-
-  const scrollToCard = useCallback(
-    (index: number) => {
-      if (index < 0) return;
-      const node = cardRefs.current[index];
-      node?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    },
-    [cardRefs]
-  );
 
   const persistSets = useCallback(
     async (payloadSets: EditableSet[], options?: { silent?: boolean }) => {
@@ -132,11 +121,6 @@ export function WorkoutTodayClient({
     },
     [planType, push, workoutId]
   );
-
-  useEffect(() => {
-    if (mode !== 'workout') return;
-    scrollToCard(activeIndex);
-  }, [activeIndex, mode, scrollToCard]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -210,49 +194,11 @@ export function WorkoutTodayClient({
     setActiveIndex(index);
   }, []);
 
-  const navigateBy = useCallback(
-    (delta: number) => {
-      setActiveIndex((current) => {
-        const len = sets.length;
-        if (len === 0) return 0;
-        const next = (current + delta + len) % len;
-        return next;
-      });
-    },
-    [sets.length]
-  );
+  // Legacy navigation handler (disabled with accordion UI)
+  const navigateBy = useCallback((_delta: number) => {
+    // no-op: carousel removed
+  }, []);
 
-  useEffect(() => {
-    if (mode !== 'workout') return;
-    const node = scrollerRef.current;
-    if (!node) return;
-    let startX = 0;
-    let startY = 0;
-    let startTime = 0;
-
-    const onTouchStart = (e: TouchEvent) => {
-      const t = e.touches[0];
-      startX = t.clientX;
-      startY = t.clientY;
-      startTime = Date.now();
-    };
-    const onTouchEnd = (e: TouchEvent) => {
-      const t = e.changedTouches[0];
-      const dx = t.clientX - startX;
-      const dy = t.clientY - startY;
-      const dt = Date.now() - startTime;
-      if (dt < 500 && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
-        navigateBy(dx < 0 ? 1 : -1);
-      }
-    };
-
-    node.addEventListener('touchstart', onTouchStart, { passive: true });
-    node.addEventListener('touchend', onTouchEnd, { passive: true });
-    return () => {
-      node.removeEventListener('touchstart', onTouchStart as any);
-      node.removeEventListener('touchend', onTouchEnd as any);
-    };
-  }, [mode, navigateBy]);
 
   const mapResponseSet = useCallback(
     (set: StartWorkoutResponseSet): EditableSet => ({
@@ -448,7 +394,7 @@ export function WorkoutTodayClient({
               onClick={() => planType && handleStartProgram(planType)}
               disabled={Boolean(startingProgramId) || !planType}
             >
-              Generer nyt program
+              New Workout
             </Button>
             {sets.length > 0 && (
               <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -461,44 +407,64 @@ export function WorkoutTodayClient({
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          Swipe mellem kortene for at starte med den øvelse, du har mest lyst til.
+Overblik over dine øvelser for i dag. Udfyld vægt og gentagelser. God træning! 
         </p>
       </header>
 
       <div className="relative">
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-background to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background to-transparent" />
-        <div
-          className={cn(
-            'flex items-stretch gap-4 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory scroll-smooth',
-            '-mx-4 px-4 sm:mx-0 sm:px-0',
-            '[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'
-          )}
-          ref={scrollerRef}
-        >
+        {false && (
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-background to-transparent" />
+        )}
+        {false && (
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background to-transparent" />
+        )}
+        <div className="space-y-3">
           {sets.map((set, index) => (
-            <div
-              key={`${set.exerciseId}-${index}`}
-              ref={(node) => {
-                cardRefs.current[index] = node;
-              }}
-              className={cn('w-[85vw] max-w-[380px] snap-center shrink-0 sm:w-[360px]', 'scroll-mx-4')}
-              onFocus={() => handleSelectCard(index)}
-              onClick={() => handleSelectCard(index)}
-            >
-              <ExerciseCard
-                value={set}
-                onChange={(next) => updateSet(index, next)}
-                onToggleComplete={() => handleToggleComplete(index)}
-                onFocus={() => handleSelectCard(index)}
-                isActive={index === activeIndex}
-                displayIndex={index + 1}
-              />
+            <div key={`${set.exerciseId}-${index}`} className="border rounded-md overflow-hidden">
+              <button
+                type="button"
+                className={cn(
+                  'w-full flex items-center justify-between gap-3 p-4 text-left',
+                  index === activeIndex ? 'bg-muted/50' : 'bg-background'
+                )}
+                aria-expanded={index === activeIndex}
+                onClick={() => handleSelectCard(index)}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+                    {index + 1}
+                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{set.exerciseName}</span>
+                    <span className="text-xs text-muted-foreground">Mål: {set.targetReps} reps</span>
+                  </div>
+                </div>
+                <span
+                  className={cn(
+                    'inline-flex min-w-[80px] items-center justify-center rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wide',
+                    set.completed ? 'bg-emerald-100 text-emerald-700' : 'bg-muted text-muted-foreground'
+                  )}
+                >
+                  {set.completed ? 'Udført' : 'Klar'}
+                </span>
+              </button>
+              {index === activeIndex && (
+                <div className="p-3">
+                  <ExerciseCard
+                    value={set}
+                    onChange={(next) => updateSet(index, next)}
+                    onToggleComplete={() => handleToggleComplete(index)}
+                    onFocus={() => handleSelectCard(index)}
+                    isActive={true}
+                    displayIndex={index + 1}
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>
         
-        <div className="absolute inset-y-0 left-0 hidden items-center pl-1 sm:flex">
+        {false && (<div className="absolute inset-y-0 left-0 hidden items-center pl-1 sm:flex">
           <Button
             type="button"
             variant="ghost"
@@ -509,8 +475,8 @@ export function WorkoutTodayClient({
           >
             ‹
           </Button>
-        </div>
-        <div className="absolute inset-y-0 right-0 hidden items-center pr-1 sm:flex">
+        </div>)}
+        {false && (<div className="absolute inset-y-0 right-0 hidden items-center pr-1 sm:flex">
           <Button
             type="button"
             variant="ghost"
@@ -521,7 +487,7 @@ export function WorkoutTodayClient({
           >
             ›
           </Button>
-        </div>
+        </div>)}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
