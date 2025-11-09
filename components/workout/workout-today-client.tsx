@@ -382,10 +382,7 @@ export function WorkoutTodayClient({
   return (
     <div className="space-y-8">
       <header className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold sm:text-2xl">
-            {planType ? `Dagens øvelser – ${planType}` : 'Dagens øvelser'}
-          </h2>
+        <div className="flex items-center justify-end gap-2">
           <div className="flex items-center gap-2">
             <Button
               type="button"
@@ -396,11 +393,6 @@ export function WorkoutTodayClient({
             >
               New Workout
             </Button>
-            {sets.length > 0 && (
-              <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {exerciseCount} øvelser
-              </span>
-            )}
             <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {completedCount}/{sets.length} logget
             </span>
