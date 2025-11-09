@@ -1,26 +1,14 @@
 import { useEffect, useState } from 'react';
 
-const mediaQueryText = '(prefers-reduced-motion: reduce)';
-
-function getInitialPrefersReducedMotion(): boolean {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-    return false;
-  }
-
-  return window.matchMedia(mediaQueryText).matches;
-}
-
 export function usePrefersReducedMotion(): boolean {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(
-    getInitialPrefersReducedMotion,
-  );
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
       return;
     }
 
-    const mediaQuery = window.matchMedia(mediaQueryText);
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     const handleChange = (event: MediaQueryListEvent | MediaQueryList) => {
       setPrefersReducedMotion(event.matches);
