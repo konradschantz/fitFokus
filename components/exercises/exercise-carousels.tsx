@@ -184,7 +184,7 @@ function ExerciseCarousel({ title, items }: { title: string; items: ExerciseLite
             >
               <Card
                 className={cn(
-                  'flex h-full min-h-[300px] flex-col gap-4 p-4 transition-all duration-200 transform-gpu will-change-transform',
+                  'flex h-full min-h-[clamp(260px,55vh,340px)] flex-col gap-4 p-4 transition-all duration-200 transform-gpu will-change-transform sm:min-h-[320px] xl:min-h-[340px]',
                   index === activeIndex
                     ? 'border-primary/70 shadow-lg shadow-primary/10 opacity-100 scale-100'
                     : 'border-muted/80 bg-background/80 opacity-60 sm:opacity-70 scale-[0.98]'
