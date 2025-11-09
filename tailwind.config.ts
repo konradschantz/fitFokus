@@ -29,6 +29,14 @@ const config: Config = {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '.5' },
         },
+        'overlay-pop': {
+          '0%': { opacity: '0', transform: 'translateY(16px) scale(0.95)' },
+          '60%': { opacity: '1', transform: 'translateY(-2px) scale(1.02)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+      },
+      animation: {
+        'overlay-pop': 'overlay-pop 0.35s ease-out both',
       },
     },
   },

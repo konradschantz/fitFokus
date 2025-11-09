@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { ExerciseCard } from './exercise-card';
 import type { EditableSet, WorkoutProgramOption } from './types';
 import { Button } from '@/components/ui/button';
@@ -74,6 +75,8 @@ export function WorkoutTodayClient({
     const stored = window.localStorage.getItem('userGender');
     return stored === 'male' || stored === 'female' ? (stored as 'male' | 'female') : 'female';
   });
+  const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
+  const [hasShownCompletion, setHasShownCompletion] = useState(false);
   const { push } = useToast();
 
   const completedCount = useMemo(() => sets.filter((set) => set.completed).length, [sets]);
@@ -145,6 +148,28 @@ export function WorkoutTodayClient({
 
   const updateSet = useCallback((index: number, next: EditableSet) => {
     setSets((prev) => prev.map((set, idx) => (idx === index ? next : set)));
+  }, []);
+
+  useEffect(() => {
+    const allLogged = sets.length > 0 && sets.every((set) => set.completed);
+    if (allLogged && !hasShownCompletion) {
+      setShowCompletionOverlay(true);
+      setHasShownCompletion(true);
+    }
+    if (!allLogged && hasShownCompletion) {
+      setHasShownCompletion(false);
+    }
+  }, [hasShownCompletion, sets]);
+
+  useEffect(() => {
+    if (mode !== 'workout') {
+      setShowCompletionOverlay(false);
+      setHasShownCompletion(false);
+    }
+  }, [mode]);
+
+  const handleDismissOverlay = useCallback(() => {
+    setShowCompletionOverlay(false);
   }, []);
 
   const handleToggleComplete = useCallback(
@@ -238,6 +263,8 @@ export function WorkoutTodayClient({
         setWorkoutId(payload.workoutId);
         setPlanType(payload.planType);
         setMode('workout');
+        setShowCompletionOverlay(false);
+        setHasShownCompletion(false);
         const firstIncomplete = nextSets.findIndex((set) => !set.completed);
         setActiveIndex(firstIncomplete >= 0 ? firstIncomplete : 0);
         push({ title: 'Program klar', description: 'Dine øvelser er genereret.' });
@@ -381,6 +408,35 @@ export function WorkoutTodayClient({
 
   return (
     <div className="space-y-8">
+      {showCompletionOverlay ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm"
+          role="presentation"
+          onClick={handleDismissOverlay}
+        >
+          <div
+            className="relative w-full max-w-sm rounded-2xl bg-background/95 p-6 text-center shadow-2xl ring-1 ring-primary/20 animate-overlay-pop"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-3xl">💪</div>
+            <h2 className="mt-4 text-2xl font-semibold">Godt klaret!</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Alle dagens øvelser er logget. Vil du have, at vi designer et måltid til dig?
+            </p>
+            <div className="mt-6 flex w-full flex-col gap-2 sm:flex-row">
+              <Button className="flex-1" asChild>
+                <Link href="/meals/overview" onClick={() => setShowCompletionOverlay(false)}>
+                  Design et måltid
+                </Link>
+              </Button>
+              <Button variant="ghost" className="flex-1" onClick={handleDismissOverlay}>
+                Ikke nu
+              </Button>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">Måltidsoversigten er under opbygning.</p>
+          </div>
+        </div>
+      ) : null}
       <header className="flex flex-col gap-2">
         <div className="flex items-center justify-end gap-2">
           <div className="flex items-center gap-2">
