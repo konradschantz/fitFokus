@@ -34,6 +34,7 @@ const navItems = [
   { href: '/workout/today?select=1', label: 'Dagens traening' },
   { href: '/history', label: 'Historik' },
   { href: '/exercises', label: 'Oevelser' },
+  { href: '/meals', label: 'Måltider' },
   // Settings removed from menu
 ];
 

@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ExerciseCard } from './exercise-card';
 import type { EditableSet, WorkoutProgramOption } from './types';
 import { Button } from '@/components/ui/button';
@@ -74,10 +75,27 @@ export function WorkoutTodayClient({
     const stored = window.localStorage.getItem('userGender');
     return stored === 'male' || stored === 'female' ? (stored as 'male' | 'female') : 'female';
   });
+  const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
   const { push } = useToast();
+  const completionRef = useRef(false);
+  const router = useRouter();
 
   const completedCount = useMemo(() => sets.filter((set) => set.completed).length, [sets]);
   const exerciseCount = useMemo(() => new Set(sets.map((s) => s.exerciseId)).size, [sets]);
+
+  useEffect(() => {
+    const isCompleted = sets.length > 0 && completedCount === sets.length;
+    if (isCompleted && !completionRef.current) {
+      completionRef.current = true;
+      setShowCompletionOverlay(true);
+    } else if (!isCompleted) {
+      completionRef.current = false;
+    }
+  }, [completedCount, sets.length]);
+
+  const handleCloseOverlay = useCallback(() => {
+    setShowCompletionOverlay(false);
+  }, []);
 
   const persistSets = useCallback(
     async (payloadSets: EditableSet[], options?: { silent?: boolean }) => {
@@ -381,6 +399,42 @@ export function WorkoutTodayClient({
 
   return (
     <div className="space-y-8">
+      {showCompletionOverlay ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="relative w-full max-w-sm rounded-2xl border border-muted bg-background p-6 text-center shadow-xl animate-in fade-in-0 zoom-in-95 duration-300">
+            <button
+              type="button"
+              onClick={handleCloseOverlay}
+              className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-muted text-lg text-foreground transition hover:bg-muted/80"
+              aria-label="Luk fejring"
+            >
+              ×
+            </button>
+            <div className="space-y-4 pt-2">
+              <div className="space-y-1">
+                <p className="text-xl font-semibold">Godt klaret!</p>
+                <p className="text-sm text-muted-foreground">
+                  Du har logget alle dagens øvelser. Vil du have os til at designe et måltid til dig?
+                </p>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+                <Button
+                  className="min-w-[140px]"
+                  onClick={() => {
+                    handleCloseOverlay();
+                    router.push('/meals');
+                  }}
+                >
+                  Ja tak
+                </Button>
+                <Button variant="ghost" onClick={handleCloseOverlay} className="min-w-[140px]">
+                  Ikke nu
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <header className="flex flex-col gap-2">
         <div className="flex items-center justify-end gap-2">
           <div className="flex items-center gap-2">
@@ -399,7 +453,7 @@ export function WorkoutTodayClient({
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-Overblik over dine øvelser for i dag. Udfyld vægt og gentagelser. God træning! 
+          Overblik over dine øvelser for i dag. Udfyld vægt og gentagelser. God træning!
         </p>
       </header>
 
