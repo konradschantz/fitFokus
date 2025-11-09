@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ExerciseCard } from './exercise-card';
+import { CompletionCelebration, COMPLETION_CELEBRATION_EVENT } from '@/components/common/completion-celebration';
 import type { EditableSet, WorkoutProgramOption } from './types';
 import { Button } from '@/components/ui/button';
 import { RestTimer } from './rest-timer';
@@ -77,10 +78,12 @@ export function WorkoutTodayClient({
   });
   const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
   const [hasShownCompletion, setHasShownCompletion] = useState(false);
+  const [celebrationIconRunId, setCelebrationIconRunId] = useState<number | null>(null);
   const { push } = useToast();
 
   const completedCount = useMemo(() => sets.filter((set) => set.completed).length, [sets]);
   const exerciseCount = useMemo(() => new Set(sets.map((s) => s.exerciseId)).size, [sets]);
+  const allLogged = useMemo(() => sets.length > 0 && sets.every((set) => set.completed), [sets]);
 
   const persistSets = useCallback(
     async (payloadSets: EditableSet[], options?: { silent?: boolean }) => {
@@ -151,22 +154,53 @@ export function WorkoutTodayClient({
   }, []);
 
   useEffect(() => {
-    const allLogged = sets.length > 0 && sets.every((set) => set.completed);
-    if (allLogged && !hasShownCompletion) {
-      setShowCompletionOverlay(true);
-      setHasShownCompletion(true);
-    }
-    if (!allLogged && hasShownCompletion) {
+    if (!allLogged) {
+      setShowCompletionOverlay(false);
       setHasShownCompletion(false);
     }
-  }, [hasShownCompletion, sets]);
+  }, [allLogged]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const handleCelebration = (event: WindowEventMap[typeof COMPLETION_CELEBRATION_EVENT]) => {
+      setCelebrationIconRunId(event.detail.runId);
+    };
+
+    window.addEventListener(COMPLETION_CELEBRATION_EVENT, handleCelebration);
+    return () => window.removeEventListener(COMPLETION_CELEBRATION_EVENT, handleCelebration);
+  }, []);
+
+  useEffect(() => {
+    if (celebrationIconRunId == null) {
+      return;
+    }
+    const timeout = window.setTimeout(() => {
+      setCelebrationIconRunId(null);
+    }, 1600);
+    return () => window.clearTimeout(timeout);
+  }, [celebrationIconRunId]);
 
   useEffect(() => {
     if (mode !== 'workout') {
       setShowCompletionOverlay(false);
       setHasShownCompletion(false);
+      setCelebrationIconRunId(null);
     }
   }, [mode]);
+
+  const handleCelebrationDone = useCallback(() => {
+    if (!allLogged) {
+      setHasShownCompletion(false);
+      return;
+    }
+    setHasShownCompletion(true);
+    if (mode === 'workout') {
+      setShowCompletionOverlay(true);
+    }
+  }, [allLogged, mode]);
 
   const handleDismissOverlay = useCallback(() => {
     setShowCompletionOverlay(false);
@@ -223,6 +257,8 @@ export function WorkoutTodayClient({
   const navigateBy = useCallback((_delta: number) => {
     // no-op: carousel removed
   }, []);
+
+  const celebrationStartIndex = Math.max(sets.length - 4, 0);
 
 
   const mapResponseSet = useCallback(
@@ -408,6 +444,10 @@ export function WorkoutTodayClient({
 
   return (
     <div className="space-y-8">
+      <CompletionCelebration
+        isComplete={allLogged && !hasShownCompletion}
+        onDone={handleCelebrationDone}
+      />
       {showCompletionOverlay ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm"
@@ -493,7 +533,35 @@ Overblik over dine øvelser for i dag. Udfyld vægt og gentagelser. God træning
                     set.completed ? 'bg-emerald-100 text-emerald-700' : 'bg-muted text-muted-foreground'
                   )}
                 >
-                  {set.completed ? 'Udført' : 'Klar'}
+                  {set.completed ? (
+                    <span className="inline-flex items-center gap-1">
+                      <svg
+                        className={cn(
+                          'h-3.5 w-3.5 text-emerald-600',
+                          celebrationIconRunId != null && index >= celebrationStartIndex
+                            ? 'celebration-check-icon'
+                            : undefined
+                        )}
+                        style={
+                          celebrationIconRunId != null && index >= celebrationStartIndex
+                            ? { animationDelay: `${(index - celebrationStartIndex) * 120}ms` }
+                            : undefined
+                        }
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M5 13.5 9.5 18 19 7" />
+                      </svg>
+                      Udført
+                    </span>
+                  ) : (
+                    'Klar'
+                  )}
                 </span>
               </button>
               {index === activeIndex && (

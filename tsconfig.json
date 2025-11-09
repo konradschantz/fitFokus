@@ -18,6 +18,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "framer-motion": [
+        "./lib/framer-motion"
       ]
     },
     "resolveJsonModule": true,
