@@ -90,7 +90,10 @@ export function WorkoutAccordion({ workouts }: { workouts: WorkoutLite[] }) {
                     const lastKg = lastSet?.weightKg ?? '–'
                     const lastReps = lastSet?.reps ?? '–'
                     return (
-                      <li key={name} className="rounded border p-2">
+                      <li
+                        key={name}
+                        className="rounded-lg border border-muted bg-muted/60 p-3 shadow-inner dark:bg-muted/30"
+                      >
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-sm font-medium">{name}</span>
                           <span className="text-xs text-muted-foreground">{sets.length} sæt</span>

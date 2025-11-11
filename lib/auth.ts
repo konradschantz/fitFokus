@@ -1,37 +1,52 @@
-// /lib/auth.ts (eller hvor din helper ligger)
+// /lib/auth.ts
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/auth";
 import { prisma } from "@/lib/db";
 
-
 type EnsureUserOpts = {
-  fallbackEmail?: string; // valgfri .env DEMO_EMAIL
+  fallbackEmail?: string;
+};
+
+const DEFAULT_SETTINGS = {
+  goal: "Styrke + kondition",
+  daysPerWeek: 4,
+  equipmentProfile: "Fitnesscenter (maskiner + frie vægte)",
+  lastPlanType: "Full Body",
 };
 
 export async function getOrCreateUserId(opts: EnsureUserOpts = {}) {
-  // 1) Find e-mail fra session (hvis next-auth er sat op). Ellers brug fallback.
-  let email =
-    process.env.DEMO_EMAIL ||
-    opts.fallbackEmail ||
-    "demo@fitfokus.local";
+  const session = await getServerSession(authOptions);
+  const fallbackEmail = opts.fallbackEmail || process.env.DEMO_EMAIL || "demo@fitfokus.local";
 
-  email = email.trim().toLowerCase();
+  if (session?.user?.id) {
+    const existing = await prisma.user.findUnique({ where: { id: session.user.id }, select: { id: true } });
+    if (existing) {
+      return existing.id;
+    }
 
-  // 2) Upsert på e-mail → få DB-id tilbage (ikke session-id)
+    const email = (session.user.email ?? fallbackEmail).trim().toLowerCase();
+    const created = await prisma.user.create({
+      data: {
+        id: session.user.id,
+        email,
+        settings: { create: DEFAULT_SETTINGS },
+      },
+      select: { id: true },
+    });
+    return created.id;
+  }
+
+  const normalizedEmail = fallbackEmail.trim().toLowerCase();
+
   const user = await prisma.user.upsert({
-    where: { email },
+    where: { email: normalizedEmail },
     update: {},
     create: {
-      email,
-      settings: {
-        create: {
-          goal: "Styrke + kondition",
-          daysPerWeek: 4,
-          equipmentProfile: "Fitnesscenter (maskiner + frie vægte)",
-          lastPlanType: "Full Body",
-        },
-      },
+      email: normalizedEmail,
+      settings: { create: DEFAULT_SETTINGS },
     },
     select: { id: true },
   });
 
-  return user.id; // <- Dette er DB’ens cuid, matcher dine rækker (cmh1...)
+  return user.id;
 }
