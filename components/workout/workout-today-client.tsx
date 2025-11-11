@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ExerciseCard } from './exercise-card';
@@ -79,7 +79,32 @@ export function WorkoutTodayClient({
   const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
   const [hasShownCompletion, setHasShownCompletion] = useState(false);
   const [celebrationIconRunId, setCelebrationIconRunId] = useState<number | null>(null);
+  const [showGeneratingLabel, setShowGeneratingLabel] = useState(false);
+  const generatingLabelTimeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
   const { push } = useToast();
+
+  const stopGeneratingLabel = useCallback(() => {
+    if (generatingLabelTimeoutRef.current) {
+      window.clearTimeout(generatingLabelTimeoutRef.current);
+      generatingLabelTimeoutRef.current = null;
+    }
+    setShowGeneratingLabel(false);
+  }, []);
+
+  const startGeneratingLabel = useCallback(() => {
+    stopGeneratingLabel();
+    setShowGeneratingLabel(true);
+    generatingLabelTimeoutRef.current = window.setTimeout(() => {
+      setShowGeneratingLabel(false);
+      generatingLabelTimeoutRef.current = null;
+    }, 5000);
+  }, [stopGeneratingLabel]);
+
+  useEffect(() => {
+    return () => {
+      stopGeneratingLabel();
+    };
+  }, [stopGeneratingLabel]);
 
   const completedCount = useMemo(() => sets.filter((set) => set.completed).length, [sets]);
   const exerciseCount = useMemo(() => new Set(sets.map((s) => s.exerciseId)).size, [sets]);
@@ -484,10 +509,16 @@ export function WorkoutTodayClient({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => planType && handleStartProgram(planType)}
+              onClick={() => {
+                if (!planType) return;
+                startGeneratingLabel();
+                void handleStartProgram(planType).finally(() => {
+                  stopGeneratingLabel();
+                });
+              }}
               disabled={Boolean(startingProgramId) || !planType}
             >
-              New Workout
+              {showGeneratingLabel ? 'Generer' : 'New Workout'}
             </Button>
             <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {completedCount}/{sets.length} logget
