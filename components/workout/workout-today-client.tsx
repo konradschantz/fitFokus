@@ -211,7 +211,8 @@ export function WorkoutTodayClient({
       const currentSet = sets[index];
       if (!currentSet) return;
       const isCompleting = !currentSet.completed;
-      if (isCompleting && (currentSet.weight == null || currentSet.reps == null)) {
+      const isYogaPlan = planType === 'yoga';
+      if (isCompleting && !isYogaPlan && (currentSet.weight == null || currentSet.reps == null)) {
         push({
           title: 'Tilføj vægt og reps',
           description: 'Indtast både vægt og gentagelser før du markerer sættet som udført.',
@@ -246,7 +247,7 @@ export function WorkoutTodayClient({
         }
       })();
     },
-    [persistSets, push, sets]
+    [persistSets, planType, push, sets]
   );
 
   const handleSelectCard = useCallback((index: number) => {
@@ -573,6 +574,7 @@ Overblik over dine øvelser for i dag. Udfyld vægt og gentagelser. God træning
                     onFocus={() => handleSelectCard(index)}
                     isActive={true}
                     displayIndex={index + 1}
+                    planType={planType}
                   />
                 </div>
               )}

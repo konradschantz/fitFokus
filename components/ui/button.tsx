@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef } from 'react';
+import { cloneElement, forwardRef, isValidElement, ReactElement } from 'react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = {
@@ -20,24 +20,40 @@ const sizeVariants = {
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: keyof typeof buttonVariants;
   size?: keyof typeof sizeVariants;
+  asChild?: boolean;
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className, variant = 'default', size = 'default', type = 'button', ...props },
+    {
+      className,
+      variant = 'default',
+      size = 'default',
+      type = 'button',
+      asChild = false,
+      children,
+      ...props
+    },
     ref
   ) => {
+    const classes = cn(
+      buttonVariants[variant] ?? buttonVariants.default,
+      sizeVariants[size] ?? sizeVariants.default,
+      className
+    );
+
+    if (asChild && isValidElement(children)) {
+      const child = children as ReactElement<{ className?: string }>;
+      return cloneElement(child, {
+        ...props,
+        className: cn(classes, child.props.className),
+      });
+    }
+
     return (
-      <button
-        ref={ref}
-        type={type}
-        className={cn(
-          buttonVariants[variant] ?? buttonVariants.default,
-          sizeVariants[size] ?? sizeVariants.default,
-          className
-        )}
-        {...props}
-      />
+      <button ref={ref} type={type} className={classes} {...props}>
+        {children}
+      </button>
     );
   }
 );

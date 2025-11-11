@@ -47,6 +47,13 @@ import dumbbell_lunge from '@/components/ui/Workouts/dumbbell_lunge.png';
 import leg_press from '@/components/ui/Workouts/leg_press.png';
 import good_morning from '@/components/ui/Workouts/good_morning.png';
 import kettlebell_sumo_squat from '@/components/ui/Workouts/kettkebell_sumo_squat.png';
+import childs_pose from '@/components/ui/yogaPoses/childs_pose.png';
+import cobra_pose from '@/components/ui/yogaPoses/cobra_pose.png';
+import downward_facing_dog from '@/components/ui/yogaPoses/downward_facing_dog.png';
+import pigeon_pose from '@/components/ui/yogaPoses/pigeon_pose.png';
+import sun_salutation_a from '@/components/ui/yogaPoses/sun_salutation_a.png';
+import tree_pose from '@/components/ui/yogaPoses/tree_pose.png';
+import warrior_ii from '@/components/ui/yogaPoses/warrior II.png';
 
 // Explicit mapping because some filenames differ from canonical exercise names
 const IMAGE_MAP: Record<string, string> = {
@@ -107,6 +114,17 @@ const IMAGE_MAP: Record<string, string> = {
   'Leg Press': leg_press.src,
   'Good Morning': good_morning.src,
   'Kettlebell Sumo Squat': kettlebell_sumo_squat.src,
+
+  // Yoga
+  'Sun Salutation A': sun_salutation_a.src,
+  'Downward Dog': downward_facing_dog.src,
+  'Downward-Facing Dog': downward_facing_dog.src,
+  'Warrior II': warrior_ii.src,
+  "Child's Pose": childs_pose.src,
+  'Cobra Pose': cobra_pose.src,
+  'Pigeon Pose': pigeon_pose.src,
+  'Tree Pose': tree_pose.src,
+  'Cat-Cow Stretch': cobra_pose.src, // fallback until a dedicated Cat-Cow image exists
 };
 
 export function getExerciseImageSrc(name: string): string | undefined {

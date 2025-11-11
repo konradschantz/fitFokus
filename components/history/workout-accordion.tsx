@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { getExerciseImageSrc } from '@/components/workout/exercise-images'
 
@@ -95,12 +96,14 @@ export function WorkoutAccordion({ workouts }: { workouts: WorkoutLite[] }) {
                           <span className="text-xs text-muted-foreground">{sets.length} sæt</span>
                         </div>
                         <div className="mt-2 overflow-hidden rounded bg-black">
-                          <div className="aspect-video w-full">
-                            <img
+                          <div className="relative aspect-video w-full">
+                            <Image
                               src={getExerciseImageSrc(name) ?? '/exercise-placeholder.svg'}
                               alt={`${name} billede`}
-                              className="h-full w-full object-contain object-center"
-                              loading="lazy"
+                              fill
+                              className="object-contain object-center"
+                              sizes="(max-width: 640px) 100vw, 640px"
+                              priority={false}
                             />
                           </div>
                         </div>
