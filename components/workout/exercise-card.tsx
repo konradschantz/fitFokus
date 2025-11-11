@@ -122,29 +122,18 @@ export function ExerciseCard({
         </div>
       </div>
 
-      <CardHeader className="gap-3 p-0">
+      <CardHeader className="gap-4 p-0">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <CardTitle className="text-xl sm:text-2xl">{value.exerciseName}</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {isYoga ? `Hold: ${yogaGuidance?.duration ?? DEFAULT_YOGA_GUIDANCE.duration}` : `Mål: ${value.targetReps} reps`}
-            </p>
+           
             {!isYoga && (value.previousWeight != null || value.previousReps) && (
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-s text-muted-foreground">
                 Sidst logget: {value.previousWeight != null ? `${value.previousWeight} kg` : '-'} · {value.previousReps ?? '-'}
               </p>
             )}
           </div>
-          <span
-            className={cn(
-              'inline-flex min-w-[90px] items-center justify-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide',
-              value.completed ? 'bg-emerald-100 text-emerald-700' : 'bg-muted text-muted-foreground'
-            )}
-          >
-            {statusLabel}
-          </span>
+        
         </div>
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Øvelse {displayIndex}</p>
       </CardHeader>
 
       <CardContent className="flex flex-1 flex-col gap-6 p-0">
@@ -239,23 +228,7 @@ export function ExerciseCard({
         >
           {value.completed ? 'Marker som ikke udført' : 'Marker som udført'}
         </Button>
-        {value.completed ? (
-          <p className="text-center text-xs text-muted-foreground">
-            {isYoga ? 'Stillingen er logget – flot arbejde!' : 'Øvelsen er logget - godt arbejde!'}
-          </p>
-        ) : isYoga ? (
-          <p className="text-center text-xs text-muted-foreground">
-            Følg guidens tekst og markér stillingen som udført, når du har været gennem holdetiden.
-          </p>
-        ) : canComplete ? (
-          <p className="text-center text-xs text-muted-foreground">
-            Log øvelsen som udført for at hoppe videre til næste kort.
-          </p>
-        ) : (
-          <p className="text-center text-xs text-muted-foreground">
-            Indtast både vægt og gentagelser før du markerer øvelsen som udført.
-          </p>
-        )}
+      
       </div>
     </Card>
   );

@@ -65,9 +65,9 @@ export function WorkoutTodayClient({
   const [workoutId, setWorkoutId] = useState<string | null>(initialWorkoutId);
   const [planType, setPlanType] = useState<string | null>(initialPlanType);
   const [sets, setSets] = useState<EditableSet[]>(initialSets);
-  const [activeIndex, setActiveIndex] = useState(() => {
+  const [activeIndex, setActiveIndex] = useState<number | null>(() => {
     const firstIncomplete = initialSets.findIndex((set) => !set.completed);
-    return firstIncomplete >= 0 ? firstIncomplete : 0;
+    return firstIncomplete >= 0 ? firstIncomplete : null;
   });
   const [startingProgramId, setStartingProgramId] = useState<string | null>(null);
   const [mode, setMode] = useState<'select' | 'workout'>(initialSets.length ? 'workout' : 'select');
@@ -234,8 +234,7 @@ export function WorkoutTodayClient({
       };
 
       setSets((prev) => prev.map((set, idx) => (idx === index ? updatedSet : set)));
-      const totalSets = sets.length || 1;
-      setActiveIndex(isCompleting ? ((index + 1) % totalSets) : index);
+      setActiveIndex(isCompleting ? null : index);
 
       void (async () => {
         const success = await persistSets([updatedSet], { silent: true });
@@ -303,7 +302,7 @@ export function WorkoutTodayClient({
         setShowCompletionOverlay(false);
         setHasShownCompletion(false);
         const firstIncomplete = nextSets.findIndex((set) => !set.completed);
-        setActiveIndex(firstIncomplete >= 0 ? firstIncomplete : 0);
+        setActiveIndex(firstIncomplete >= 0 ? firstIncomplete : null);
         push({ title: 'Program klar', description: 'Dine øvelser er genereret.' });
       } catch (error) {
         push({
