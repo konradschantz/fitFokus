@@ -595,19 +595,25 @@ Overblik over dine øvelser for i dag. Udfyld vægt og gentagelser. God træning
                   )}
                 </span>
               </button>
-              {index === activeIndex && (
+              <div
+                className={cn(
+                  'overflow-hidden transition-all duration-300 ease-out',
+                  index === activeIndex ? 'max-h-[1500px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
+                )}
+                aria-hidden={index !== activeIndex}
+              >
                 <div className="p-3">
                   <ExerciseCard
                     value={set}
                     onChange={(next) => updateSet(index, next)}
                     onToggleComplete={() => handleToggleComplete(index)}
                     onFocus={() => handleSelectCard(index)}
-                    isActive={true}
+                    isActive={index === activeIndex}
                     displayIndex={index + 1}
                     planType={planType}
                   />
                 </div>
-              )}
+              </div>
             </div>
           ))}
         </div>
