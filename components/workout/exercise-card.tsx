@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from 'react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -83,6 +82,9 @@ export type ExerciseCardProps = {
   onChange: (value: EditableSet) => void;
   onToggleComplete: () => void;
   onFocus?: () => void;
+  onReplace?: () => void;
+  onRemove?: () => void;
+  disableRemove?: boolean;
   isActive: boolean;
   displayIndex: number;
   planType?: string | null;
@@ -93,14 +95,15 @@ export function ExerciseCard({
   onChange,
   onToggleComplete,
   onFocus,
+  onReplace,
+  onRemove,
+  disableRemove,
   isActive,
   displayIndex,
   planType,
 }: ExerciseCardProps) {
   const isYoga = planType === 'yoga';
   const yogaGuidance = isYoga ? getYogaGuidance(value.exerciseName) : null;
-  const statusLabel = useMemo(() => (value.completed ? 'Udført' : 'Klar'), [value.completed]);
-  const canComplete = isYoga ? true : value.weight != null && value.reps != null;
 
   return (
     <Card
@@ -125,7 +128,12 @@ export function ExerciseCard({
       <CardHeader className="gap-4 p-0">
         <div className="flex items-center justify-between gap-4">
           <div>
-           
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary/70">Øvelse #{displayIndex}</p>
+            <p className="text-lg font-semibold text-foreground">{value.exerciseName}</p>
+            {value.primaryMuscle ? (
+              <p className="text-xs text-muted-foreground">{value.primaryMuscle}</p>
+            ) : null}
+
             {!isYoga && (value.previousWeight != null || value.previousReps) && (
               <p className="mt-1 text-s text-muted-foreground">
                 Sidst logget: {value.previousWeight != null ? `${value.previousWeight} kg` : '-'} · {value.previousReps ?? '-'}
@@ -228,7 +236,20 @@ export function ExerciseCard({
         >
           {value.completed ? 'Marker som ikke udført' : 'Marker som udført'}
         </Button>
-      
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button type="button" variant="outline" className="flex-1" onClick={onReplace}>
+            Replace workout
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="flex-1 text-destructive hover:text-destructive"
+            onClick={onRemove}
+            disabled={disableRemove}
+          >
+            Fjern øvelse
+          </Button>
+        </div>
       </div>
     </Card>
   );

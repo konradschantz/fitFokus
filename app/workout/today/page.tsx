@@ -19,6 +19,12 @@ const PROGRAM_OPTIONS: WorkoutProgramOption[] = [
     description: 'Skru op for squat-, lår- og baglårsarbejdet med tunge benøvelser.',
   },
   {
+    id: 'full_body',
+    title: 'Full Body',
+    subtitle: 'Balancér over- og underkrop',
+    description: 'En blanding af ben og overkropsøvelser for en komplet session.',
+  },
+  {
     id: 'cardio',
     title: 'Cardio',
     subtitle: 'Generer cardio program',
@@ -51,6 +57,18 @@ const ENHANCED_PROGRAM_OPTIONS: WorkoutProgramOption[] = [
     durationMin: 40,
     calories: 400,
     exerciseCount: 8,
+  },
+  {
+    id: 'full_body',
+    title: 'Full Body',
+    subtitle: 'Balancér over- og underkrop',
+    description: 'En komplet workout der matcher ben og overkrop i samme session.',
+    imageUrl:
+      'https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=1600&auto=format&fit=crop',
+    level: 'Intermediate',
+    durationMin: 50,
+    calories: 460,
+    exerciseCount: 10,
   },
   {
     id: 'cardio',
@@ -129,6 +147,7 @@ export default async function WorkoutTodayPage({
         exerciseId: set.exerciseId,
         exerciseName: set.exerciseName,
         orderIndex: index,
+        primaryMuscle: set.primaryMuscle ?? existing?.Exercise.primaryMuscle ?? null,
         weight: existing?.weightKg ?? set.suggestedWeight ?? null,
         reps: existing?.reps ?? null,
         rpe: existing?.rpe ?? null,
@@ -150,6 +169,7 @@ export default async function WorkoutTodayPage({
       exerciseId: set.exerciseId,
       exerciseName: set.Exercise.name,
       orderIndex: set.orderIndex,
+      primaryMuscle: set.Exercise.primaryMuscle,
       weight: set.weightKg ?? null,
       reps: set.reps ?? null,
       rpe: set.rpe ?? null,

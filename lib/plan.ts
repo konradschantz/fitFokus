@@ -1,11 +1,16 @@
 import { prisma } from './db';
 import { getPlanTypeSequence, largeLiftIncrement, templates } from './planConfig';
 
+const UPPER_MUSCLES = ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps'];
+const LOWER_MUSCLES = ['Quads', 'Hamstrings', 'Glutes', 'Calves'];
+const FULL_BODY_MUSCLES = [...UPPER_MUSCLES, ...LOWER_MUSCLES];
+
 export type WorkoutDraft = {
   planType: string;
   sets: Array<{
     exerciseId: string;
     exerciseName: string;
+    primaryMuscle?: string | null;
     targetReps: string;
     suggestedWeight: number | null;
     rpeTarget: number | null;
@@ -66,7 +71,10 @@ async function determineNextPlanType(userId: string, basePlan: string): Promise<
 }
 
 async function fetchExerciseByName(name: string) {
-  return prisma.exercise.findUnique({ where: { name }, select: { id: true, name: true, metric: true } });
+  return prisma.exercise.findUnique({
+    where: { name },
+    select: { id: true, name: true, metric: true, primaryMuscle: true },
+  });
 }
 
 type SetHistory = {
@@ -165,24 +173,24 @@ export async function suggestNextWorkout(
   }
 
   const allowedByPlan: Record<string, string[] | null> = {
-    upper: ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps'],
+    upper: UPPER_MUSCLES,
     push: ['Chest', 'Shoulders', 'Triceps'],
     pull: ['Back', 'Biceps'],
-    lower: ['Quads', 'Hamstrings', 'Glutes', 'Calves'],
-    legs: ['Quads', 'Hamstrings', 'Glutes', 'Calves'],
-    full_body: null,
+    lower: LOWER_MUSCLES,
+    legs: LOWER_MUSCLES,
+    full_body: FULL_BODY_MUSCLES,
   };
 
-  let pool: Array<{ id: string; name: string; metric: string }> = [];
+  let pool: Array<{ id: string; name: string; metric: string; primaryMuscle: string | null }> = [];
   if (computedPlanType === 'cardio') {
     pool = await prisma.exercise.findMany({
       where: { category: 'Cardio' },
-      select: { id: true, name: true, metric: true },
+      select: { id: true, name: true, metric: true, primaryMuscle: true },
     });
   } else if (computedPlanType === 'yoga') {
     pool = await prisma.exercise.findMany({
       where: { category: 'Yoga' },
-      select: { id: true, name: true, metric: true },
+      select: { id: true, name: true, metric: true, primaryMuscle: true },
     });
   } else {
     const allowed = allowedByPlan[computedPlanType] ?? null;
@@ -191,12 +199,12 @@ export async function suggestNextWorkout(
         category: 'Strength',
         ...(allowed ? { primaryMuscle: { in: allowed } } : {}),
       },
-      select: { id: true, name: true, metric: true },
+      select: { id: true, name: true, metric: true, primaryMuscle: true },
     });
     if (primaryPool.length < MIN_COUNT) {
       const anyStrength = await prisma.exercise.findMany({
         where: { category: 'Strength' },
-        select: { id: true, name: true, metric: true },
+        select: { id: true, name: true, metric: true, primaryMuscle: true },
       });
       const map = new Map(primaryPool.map((i) => [i.id, i]));
       for (const m of anyStrength) map.set(m.id, m);
@@ -232,6 +240,7 @@ export async function suggestNextWorkout(
         return {
           exerciseId: exercise.id,
           exerciseName: exercise.name,
+          primaryMuscle: exercise.primaryMuscle,
           targetReps: `${TARGET_REP_RANGE.min}-${TARGET_REP_RANGE.max}`,
           suggestedWeight,
           rpeTarget: 7,
@@ -248,7 +257,31 @@ export async function suggestNextWorkout(
     pool.length,
     Math.max(MIN_COUNT, Math.min(MAX_COUNT, Math.floor(Math.random() * (MAX_COUNT - MIN_COUNT + 1)) + MIN_COUNT))
   );
-  const picked = pickRandom(pool, count);
+  let picked: Array<{ id: string; name: string; metric: string; primaryMuscle: string | null }> = [];
+  if (computedPlanType === 'full_body') {
+    const upperPool = pool.filter(
+      (exercise) => exercise.primaryMuscle && UPPER_MUSCLES.includes(exercise.primaryMuscle)
+    );
+    const lowerPool = pool.filter(
+      (exercise) => exercise.primaryMuscle && LOWER_MUSCLES.includes(exercise.primaryMuscle)
+    );
+    const upperPickCount = Math.min(Math.max(2, Math.floor(count / 2)), upperPool.length);
+    const upperPicked = pickRandom(upperPool, upperPickCount);
+    const lowerPickCount = Math.min(Math.max(2, Math.floor(count / 2)), lowerPool.length);
+    const remainingSlotsAfterUpper = count - upperPicked.length;
+    const lowerNeeded = Math.min(remainingSlotsAfterUpper, lowerPickCount);
+    const lowerPicked = pickRandom(lowerPool, lowerNeeded);
+    const usedIds = new Set([...upperPicked, ...lowerPicked].map((exercise) => exercise.id));
+    const remainingNeeded = Math.max(0, count - usedIds.size);
+    const remainingPool = pool.filter((exercise) => !usedIds.has(exercise.id));
+    const extraPicked = pickRandom(remainingPool, remainingNeeded);
+    picked = [...upperPicked, ...lowerPicked, ...extraPicked];
+    if (!picked.length) {
+      picked = pickRandom(pool, count);
+    }
+  } else {
+    picked = pickRandom(pool, count);
+  }
 
   const resolved = await Promise.all(
     picked.map(async (exercise, index) => {
@@ -269,6 +302,7 @@ export async function suggestNextWorkout(
       return {
         exerciseId: exercise.id,
         exerciseName: exercise.name,
+        primaryMuscle: exercise.primaryMuscle,
         targetReps: `${TARGET_REP_RANGE.min}-${TARGET_REP_RANGE.max}`,
         suggestedWeight,
         rpeTarget: 7,
@@ -317,6 +351,13 @@ export async function recordResult(input: RecordResultInput) {
         },
       });
     }
+    const desiredOrderIndexes = sets.map((set) => set.orderIndex);
+    await tx.set.deleteMany({
+      where: {
+        workoutId,
+        ...(desiredOrderIndexes.length ? { orderIndex: { notIn: desiredOrderIndexes } } : {}),
+      },
+    });
     await tx.userSettings.upsert({
       where: { userId: workout.userId },
       update: { lastPlanType: planType },
