@@ -60,6 +60,7 @@ export async function POST(request: Request) {
         exerciseId: set.exerciseId,
         exerciseName: set.exerciseName,
         orderIndex: index,
+        primaryMuscle: set.primaryMuscle ?? existing?.Exercise.primaryMuscle ?? null,
         weight: existing?.weightKg ?? set.suggestedWeight ?? null,
         reps: existing?.reps ?? null,
         rpe: existing?.rpe ?? null,

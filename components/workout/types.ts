@@ -3,6 +3,7 @@ export type EditableSet = {
   exerciseId: string;
   exerciseName: string;
   orderIndex: number;
+  primaryMuscle?: string | null;
   weight: number | null;
   reps: number | null;
   rpe: number | null;

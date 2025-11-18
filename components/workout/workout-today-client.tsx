@@ -11,6 +11,8 @@ import { RestTimer } from './rest-timer';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '@/components/ui/dialog';
 
 // Kategori-billeder (male/female)
 import upperMale from '@/components/ui/workoutCategori/maleUpperbodyCat.png';
@@ -34,6 +36,7 @@ type StartWorkoutResponseSet = {
   exerciseId: string;
   exerciseName: string;
   orderIndex: number;
+  primaryMuscle?: string | null;
   weight: number | null;
   reps: number | null;
   rpe: number | null;
@@ -42,6 +45,14 @@ type StartWorkoutResponseSet = {
   notes?: string;
   previousWeight?: number | null;
   previousReps?: string | null;
+};
+
+type ExerciseCatalogItem = {
+  id: string;
+  name: string;
+  primaryMuscle: string | null;
+  category: string;
+  metric: string;
 };
 
 type StartWorkoutResponse = {
@@ -65,6 +76,9 @@ export function WorkoutTodayClient({
   const [workoutId, setWorkoutId] = useState<string | null>(initialWorkoutId);
   const [planType, setPlanType] = useState<string | null>(initialPlanType);
   const [sets, setSets] = useState<EditableSet[]>(initialSets);
+  const [exerciseCatalog, setExerciseCatalog] = useState<ExerciseCatalogItem[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState<number | null>(() => {
     const firstIncomplete = initialSets.findIndex((set) => !set.completed);
     return firstIncomplete >= 0 ? firstIncomplete : null;
@@ -76,6 +90,11 @@ export function WorkoutTodayClient({
     const stored = window.localStorage.getItem('userGender');
     return stored === 'male' || stored === 'female' ? (stored as 'male' | 'female') : 'female';
   });
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [pickerMode, setPickerMode] = useState<'add' | 'replace'>('add');
+  const [pickerIndex, setPickerIndex] = useState<number | null>(null);
+  const [selectedMuscleFilter, setSelectedMuscleFilter] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
   const [hasShownCompletion, setHasShownCompletion] = useState(false);
   const [celebrationIconRunId, setCelebrationIconRunId] = useState<number | null>(null);
@@ -106,9 +125,85 @@ export function WorkoutTodayClient({
     };
   }, [stopGeneratingLabel]);
 
+  useEffect(() => {
+    let cancelled = false;
+    const fetchExercises = async () => {
+      try {
+        setCatalogLoading(true);
+        const response = await fetch('/api/exercises');
+        if (!response.ok) {
+          throw new Error('Kunne ikke hente øvelser');
+        }
+        const data: ExerciseCatalogItem[] = await response.json();
+        if (!cancelled) {
+          setExerciseCatalog(data);
+          setCatalogError(null);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setCatalogError(error instanceof Error ? error.message : 'Ukendt fejl ved hentning af øvelser');
+        }
+      } finally {
+        if (!cancelled) {
+          setCatalogLoading(false);
+        }
+      }
+    };
+    fetchExercises();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const exerciseCatalogMap = useMemo(() => {
+    return new Map(exerciseCatalog.map((item) => [item.id, item]));
+  }, [exerciseCatalog]);
+
+  useEffect(() => {
+    if (!exerciseCatalog.length) return;
+    setSets((prev) => {
+      let changed = false;
+      const next = prev.map((set) => {
+        if (set.primaryMuscle) return set;
+        const exercise = exerciseCatalogMap.get(set.exerciseId);
+        if (exercise?.primaryMuscle) {
+          changed = true;
+          return { ...set, primaryMuscle: exercise.primaryMuscle };
+        }
+        return set;
+      });
+      return changed ? next : prev;
+    });
+  }, [exerciseCatalog, exerciseCatalogMap]);
+
   const completedCount = useMemo(() => sets.filter((set) => set.completed).length, [sets]);
   const exerciseCount = useMemo(() => new Set(sets.map((s) => s.exerciseId)).size, [sets]);
   const allLogged = useMemo(() => sets.length > 0 && sets.every((set) => set.completed), [sets]);
+  const availableMuscleFilters = useMemo(() => {
+    const muscles = new Set<string>();
+    for (const exercise of exerciseCatalog) {
+      if (exercise.primaryMuscle) {
+        muscles.add(exercise.primaryMuscle);
+      }
+    }
+    return Array.from(muscles).sort((a, b) => a.localeCompare(b));
+  }, [exerciseCatalog]);
+
+  const filteredExercises = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+    return exerciseCatalog.filter((exercise) => {
+      let matchesMuscle = true;
+      if (selectedMuscleFilter) {
+        matchesMuscle = exercise.primaryMuscle === selectedMuscleFilter;
+      }
+      if (pickerMode === 'replace' && selectedMuscleFilter == null) {
+        matchesMuscle = true;
+      }
+      if (!matchesMuscle) return false;
+      if (!normalizedSearch) return true;
+      return exercise.name.toLowerCase().includes(normalizedSearch);
+    });
+  }, [exerciseCatalog, pickerMode, searchTerm, selectedMuscleFilter]);
 
   const persistSets = useCallback(
     async (payloadSets: EditableSet[], options?: { silent?: boolean }) => {
@@ -151,6 +246,55 @@ export function WorkoutTodayClient({
       }
     },
     [planType, push, workoutId]
+  );
+
+  const ensureActiveWorkout = useCallback(() => {
+    if (!workoutId || !planType) {
+      push({
+        title: 'Start program',
+        description: 'Start eller vælg et program før du justerer øvelser.',
+      });
+      return false;
+    }
+    return true;
+  }, [planType, push, workoutId]);
+
+  const reindexSets = useCallback((list: EditableSet[]) => {
+    return list.map((set, index) => ({ ...set, orderIndex: index }));
+  }, []);
+
+  const createSetFromExercise = useCallback((exercise: ExerciseCatalogItem, orderIndex: number): EditableSet => {
+    return {
+      exerciseId: exercise.id,
+      exerciseName: exercise.name,
+      orderIndex,
+      primaryMuscle: exercise.primaryMuscle,
+      weight: null,
+      reps: null,
+      rpe: null,
+      sets: null,
+      completed: false,
+      targetReps: '8-12',
+      notes: '',
+      previousWeight: null,
+      previousReps: null,
+    };
+  }, []);
+
+  const syncSets = useCallback(
+    (nextSets: EditableSet[], options?: { message?: string }) => {
+      const previousSets = sets;
+      setSets(nextSets);
+      void (async () => {
+        const success = await persistSets(nextSets, { silent: true });
+        if (!success) {
+          setSets(previousSets);
+        } else if (options?.message) {
+          push({ title: options.message });
+        }
+      })();
+    },
+    [persistSets, push, sets]
   );
 
   useEffect(() => {
@@ -215,6 +359,13 @@ export function WorkoutTodayClient({
       setCelebrationIconRunId(null);
     }
   }, [mode]);
+
+  useEffect(() => {
+    if (!isPickerOpen) {
+      setPickerIndex(null);
+      setSearchTerm('');
+    }
+  }, [isPickerOpen]);
 
   const handleCelebrationDone = useCallback(() => {
     if (!allLogged) {
@@ -283,6 +434,76 @@ export function WorkoutTodayClient({
     // no-op: carousel removed
   }, []);
 
+  const handleRemoveExercise = useCallback(
+    (index: number) => {
+      if (!ensureActiveWorkout()) return;
+      if (sets.length <= 1) {
+        push({
+          title: 'Mindst én øvelse',
+          description: 'Tilføj en ny øvelse før du fjerner den sidste.',
+        });
+        return;
+      }
+      const nextSets = reindexSets(sets.filter((_, idx) => idx !== index));
+      syncSets(nextSets, { message: 'Øvelse fjernet' });
+      setActiveIndex((current) => {
+        if (current == null) return current;
+        if (nextSets.length === 0) return null;
+        if (current > index) return current - 1;
+        if (current === index) return Math.min(index, nextSets.length - 1);
+        return current;
+      });
+    },
+    [ensureActiveWorkout, push, reindexSets, sets, syncSets]
+  );
+
+  const handleOpenAddDialog = useCallback(() => {
+    if (!ensureActiveWorkout()) return;
+    setPickerMode('add');
+    setPickerIndex(null);
+    setSelectedMuscleFilter(null);
+    setIsPickerOpen(true);
+  }, [ensureActiveWorkout]);
+
+  const handleOpenReplaceDialog = useCallback(
+    (index: number) => {
+      if (!ensureActiveWorkout()) return;
+      setPickerMode('replace');
+      setPickerIndex(index);
+      setSelectedMuscleFilter(sets[index]?.primaryMuscle ?? null);
+      setIsPickerOpen(true);
+    },
+    [ensureActiveWorkout, sets]
+  );
+
+  const handleExerciseSelected = useCallback(
+    (exercise: ExerciseCatalogItem) => {
+      if (!ensureActiveWorkout()) return;
+      if (pickerMode === 'replace' && pickerIndex != null) {
+        const nextSets = reindexSets(
+          sets.map((set, idx) => (idx === pickerIndex ? createSetFromExercise(exercise, set.orderIndex) : set))
+        );
+        syncSets(nextSets, { message: 'Øvelse erstattet' });
+        setActiveIndex(pickerIndex);
+      } else {
+        const nextSet = createSetFromExercise(exercise, sets.length);
+        const nextSets = reindexSets([...sets, nextSet]);
+        syncSets(nextSets, { message: 'Øvelse tilføjet' });
+        setActiveIndex(nextSets.length - 1);
+      }
+      setIsPickerOpen(false);
+    },
+    [
+      createSetFromExercise,
+      ensureActiveWorkout,
+      pickerIndex,
+      pickerMode,
+      reindexSets,
+      sets,
+      syncSets,
+    ]
+  );
+
   const celebrationStartIndex = Math.max(sets.length - 4, 0);
 
 
@@ -292,6 +513,7 @@ export function WorkoutTodayClient({
       exerciseId: set.exerciseId,
       exerciseName: set.exerciseName,
       orderIndex: set.orderIndex,
+      primaryMuscle: set.primaryMuscle ?? null,
       weight: set.weight ?? null,
       reps: set.reps ?? null,
       rpe: set.rpe ?? null,
@@ -417,14 +639,19 @@ export function WorkoutTodayClient({
                         legs: legsMale,
                         cardio: cardioMale,
                         yoga: yogaMale,
+                        full_body: upperMale,
                       };
                       const femaleMap: Record<string, any> = {
                         upper: upperFemale,
                         legs: legsFemale,
                         cardio: cardioFemale,
                         yoga: yogaFemale,
+                        full_body: upperFemale,
                       };
-                      const src = (gender === 'male' ? maleMap[id] : femaleMap[id]) ?? maleMap['upper'];
+                      const src =
+                        gender === 'male'
+                          ? maleMap[id] ?? maleMap['upper']
+                          : femaleMap[id] ?? femaleMap['upper'];
                       return (
                         <Image
                           src={src}
@@ -520,6 +747,9 @@ export function WorkoutTodayClient({
             >
               {showGeneratingLabel ? 'Generer' : 'New Workout'}
             </Button>
+            <Button type="button" size="sm" onClick={handleOpenAddDialog} disabled={!workoutId}>
+              Tilføj øvelse
+            </Button>
             <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {completedCount}/{sets.length} logget
             </span>
@@ -608,6 +838,9 @@ Overblik over dine øvelser for i dag. Udfyld vægt og gentagelser. God træning
                     onChange={(next) => updateSet(index, next)}
                     onToggleComplete={() => handleToggleComplete(index)}
                     onFocus={() => handleSelectCard(index)}
+                    onReplace={() => handleOpenReplaceDialog(index)}
+                    onRemove={() => handleRemoveExercise(index)}
+                    disableRemove={sets.length <= 1}
                     isActive={index === activeIndex}
                     displayIndex={index + 1}
                     planType={planType}
@@ -647,6 +880,80 @@ Overblik over dine øvelser for i dag. Udfyld vægt og gentagelser. God træning
       <div className="flex flex-wrap items-center gap-3">
         <RestTimer />
       </div>
+      <Dialog open={isPickerOpen} onOpenChange={setIsPickerOpen}>
+        <DialogHeader
+          title={pickerMode === 'replace' ? 'Erstat øvelse' : 'Tilføj øvelse'}
+          description={
+            pickerMode === 'replace'
+              ? selectedMuscleFilter
+                ? `Vælg en ny øvelse fra ${selectedMuscleFilter}-gruppen.`
+                : 'Vælg en ny øvelse til at erstatte den valgte.'
+              : 'Søg eller filtrér for at udvide dagens program.'
+          }
+        />
+        <div className="space-y-4">
+          <Input
+            placeholder="Søg efter øvelse"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+          />
+          {pickerMode === 'add' ? (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={selectedMuscleFilter == null ? 'default' : 'outline'}
+                onClick={() => setSelectedMuscleFilter(null)}
+              >
+                Alle muskelgrupper
+              </Button>
+              {availableMuscleFilters.map((muscle) => (
+                <Button
+                  key={muscle}
+                  type="button"
+                  size="sm"
+                  variant={selectedMuscleFilter === muscle ? 'default' : 'outline'}
+                  onClick={() => setSelectedMuscleFilter(muscle)}
+                >
+                  {muscle}
+                </Button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              {selectedMuscleFilter
+                ? `Viser øvelser for ${selectedMuscleFilter}.`
+                : 'Ingen muskelgruppe registreret – viser alle øvelser.'}
+            </p>
+          )}
+          <div className="max-h-80 space-y-2 overflow-y-auto rounded-lg border p-2">
+            {catalogLoading ? (
+              <p className="text-sm text-muted-foreground">Henter øvelser…</p>
+            ) : catalogError ? (
+              <p className="text-sm text-destructive">{catalogError}</p>
+            ) : filteredExercises.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Ingen øvelser matcher dine filtre.</p>
+            ) : (
+              filteredExercises.map((exercise) => (
+                <button
+                  key={exercise.id}
+                  type="button"
+                  className="w-full rounded-md border border-muted bg-background/80 p-3 text-left transition hover:border-primary/60"
+                  onClick={() => handleExerciseSelected(exercise)}
+                >
+                  <p className="text-sm font-semibold">{exercise.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {exercise.primaryMuscle ?? 'Ukendt muskel'} · {exercise.category}
+                  </p>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+        <DialogFooter>
+          <DialogCloseButton label="Luk" />
+        </DialogFooter>
+      </Dialog>
     </div>
   );
 }
