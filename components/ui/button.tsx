@@ -10,6 +10,8 @@ const buttonVariants = {
     'inline-flex h-11 items-center justify-center rounded-lg border border-primary px-4 text-sm font-semibold text-primary transition hover:bg-primary/10 disabled:opacity-100 disabled:pointer-events-none',
   ghost:
     'inline-flex h-11 items-center justify-center rounded-lg px-4 text-sm font-semibold text-foreground hover:bg-muted disabled:opacity-100 disabled:pointer-events-none',
+  success:
+    'inline-flex h-11 items-center justify-center rounded-lg bg-success px-4 text-sm font-semibold text-success-foreground transition hover:bg-success/90 disabled:opacity-100 disabled:pointer-events-none',
 };
 
 const sizeVariants = {

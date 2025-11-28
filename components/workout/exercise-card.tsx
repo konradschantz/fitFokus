@@ -7,6 +7,7 @@ import { NumberStepInput } from './number-step-input';
 import { cn } from '@/lib/utils';
 import type { EditableSet } from './types';
 import { getExerciseImageSrc } from './exercise-images';
+import { Check, RefreshCw, Trash2, Undo2 } from 'lucide-react';
 
 type YogaGuidance = {
   duration: string;
@@ -108,11 +109,11 @@ export function ExerciseCard({
   return (
     <Card
       className={cn(
-        'flex h-full min-h-[360px] flex-col justify-between gap-6 p-6 transition-all duration-200 sm:min-h-[380px] transform-gpu will-change-transform',
+        'flex h-full flex-col justify-between gap-4 p-4 transition-all duration-200 sm:gap-6 sm:p-6 transform-gpu will-change-transform',
         isActive ? 'border-primary/70 shadow-lg shadow-primary/10 scale-100' : 'border-muted/80 bg-background scale-[0.98]'
       )}
     >
-      <div className="overflow-hidden rounded-t-xl bg-black -mx-6 -mt-6">
+      <div className="overflow-hidden rounded-t-xl bg-black -mx-4 -mt-4 sm:-mx-6 sm:-mt-6">
         <div className="relative aspect-video w-full">
           <Image
             src={getExerciseImageSrc(value.exerciseName) ?? '/exercise-placeholder.svg'}
@@ -144,7 +145,7 @@ export function ExerciseCard({
         </div>
       </CardHeader>
 
-      <CardContent className="flex flex-1 flex-col gap-6 p-0">
+      <CardContent className="flex flex-1 flex-col gap-4 p-0 sm:gap-6">
         {isYoga ? (
           <div className="space-y-4">
             <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
@@ -170,9 +171,9 @@ export function ExerciseCard({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4">
             <div className="space-y-2">
-              <span className="text-base font-semibold text-muted-foreground">Vægt (kg)</span>
+              <span className="text-sm font-semibold text-muted-foreground sm:text-base">Vægt (kg)</span>
               <NumberStepInput
                 value={value.weight}
                 onChange={(weight) => onChange({ ...value, weight })}
@@ -183,12 +184,12 @@ export function ExerciseCard({
                   'data-set-input': 'true',
                   name: `weight-${value.orderIndex}`,
                   onFocus,
-                  className: 'h-11 text-base',
+                  className: 'h-10 text-sm sm:h-11 sm:text-base',
                 }}
               />
             </div>
             <div className="space-y-2">
-              <span className="text-base font-semibold text-muted-foreground">Sæt</span>
+              <span className="text-sm font-semibold text-muted-foreground sm:text-base">Sæt</span>
               <NumberStepInput
                 value={value.sets}
                 onChange={(sets) => onChange({ ...value, sets })}
@@ -199,12 +200,12 @@ export function ExerciseCard({
                   'data-set-input': 'true',
                   name: `sets-${value.orderIndex}`,
                   onFocus,
-                  className: 'h-11 text-base',
+                  className: 'h-10 text-sm sm:h-11 sm:text-base',
                 }}
               />
             </div>
             <div className="space-y-2">
-              <span className="text-base font-semibold text-muted-foreground">Reps</span>
+              <span className="text-sm font-semibold text-muted-foreground sm:text-base">Reps</span>
               <NumberStepInput
                 value={value.reps}
                 onChange={(reps) => onChange({ ...value, reps })}
@@ -214,7 +215,7 @@ export function ExerciseCard({
                   'data-set-input': 'true',
                   name: `reps-${value.orderIndex}`,
                   onFocus,
-                  className: 'h-11 text-base',
+                  className: 'h-10 text-sm sm:h-11 sm:text-base',
                 }}
               />
             </div>
@@ -222,34 +223,54 @@ export function ExerciseCard({
         )}
       </CardContent>
 
-      <div className="flex flex-col gap-3">
+      <div className="mt-2 flex w-full items-center gap-3">
+        {/* Left button: Udfør */}
         <Button
           type="button"
           onClick={onToggleComplete}
           className={cn(
-            'h-12 text-base opacity-100',
-            value.completed
-              ? 'border-emerald-600 text-emerald-600 hover:bg-emerald-600/10'
-              : 'bg-emerald-600 text-white hover:bg-emerald-600/90'
+            'flex-1 rounded-full bg-success px-4 py-2.5 text-sm font-medium text-white transition hover:bg-success/90 border border-success',
+            value.completed && 'shadow-md'
           )}
-          variant={value.completed ? 'outline' : 'default'}
+          asChild
         >
-          {value.completed ? 'Marker som ikke udført' : 'Marker som udført'}
+          <span className="inline-flex items-center justify-center">
+            {value.completed ? (
+              <>
+                <Undo2 className="mr-2 h-4 w-4" />
+                <span>Udført</span>
+              </>
+            ) : (
+              <>
+                <Check className="mr-2 h-4 w-4" strokeWidth={2.5} />
+                <span>Udfør</span>
+              </>
+            )}
+          </span>
         </Button>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button type="button" variant="outline" className="flex-1" onClick={onReplace}>
-            Replace workout
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            className="flex-1 text-destructive hover:text-destructive"
-            onClick={onRemove}
-            disabled={disableRemove}
-          >
-            Fjern øvelse
-          </Button>
-        </div>
+
+        {/* Middle button: Replace */}
+        <Button
+          type="button"
+          variant="outline"
+          className="rounded-full bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-muted"
+          onClick={onReplace}
+        >
+          <RefreshCw className="mr-2 h-4 w-4 text-primary" />
+          <span>Replace</span>
+        </Button>
+
+        {/* Right button: Fjern */}
+        <Button
+          type="button"
+          variant="outline"
+          className="rounded-full bg-background px-4 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10"
+          onClick={onRemove}
+          disabled={disableRemove}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          <span>Fjern</span>
+        </Button>
       </div>
     </Card>
   );

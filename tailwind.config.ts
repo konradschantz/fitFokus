@@ -2,6 +2,14 @@ import type { Config } from 'tailwindcss';
 
 const config: Config = {
   darkMode: 'class',
+  safelist: [
+    // Ensure success utility classes are always generated (used in exercise action buttons)
+    'bg-success',
+    'hover:bg-success/90',
+    'border-success',
+    'text-success',
+    'text-success-foreground',
+  ],
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
   theme: {
     extend: {
@@ -17,6 +25,10 @@ const config: Config = {
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
+        },
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
         },
       },
       borderRadius: {

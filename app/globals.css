@@ -4,25 +4,29 @@
 
 :root {
   --background: 0 0% 100%;
-  --foreground: 215 25% 15%;
-  --muted: 214 17% 92%;
-  --muted-foreground: 215 16% 45%;
-  --primary: 220 90% 56%;
-  --primary-foreground: 0 0% 100%;
-  --destructive: 0 84% 60%;
+  --foreground: 222.2 47.4% 11.2%;
+  --muted: 214.3 31.8% 91.4%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --primary: 217.2 91.2% 59.8%;
+  --primary-foreground: 210 40% 98%;
+  --destructive: 0 72.2% 50.6%;
   --destructive-foreground: 0 0% 100%;
+  --success: 142.1 76.2% 36.3%;
+  --success-foreground: 0 0% 100%;
   color-scheme: light;
 }
 
 .dark {
-  --background: 222 25% 10%;
+  --background: 222.2 47.4% 11.2%;
   --foreground: 210 40% 98%;
-  --muted: 222 16% 18%;
-  --muted-foreground: 215 16% 72%;
-  --primary: 220 90% 56%;
+  --muted: 215.4 16.3% 26.9%;
+  --muted-foreground: 215.4 16.3% 56.9%;
+  --primary: 217.2 91.2% 59.8%;
   --primary-foreground: 210 40% 98%;
-  --destructive: 0 63% 52%;
+  --destructive: 0 72.2% 50.6%;
   --destructive-foreground: 0 0% 100%;
+  --success: 142.1 76.2% 36.3%;
+  --success-foreground: 0 0% 100%;
   color-scheme: dark;
 }
 
