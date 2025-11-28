@@ -99,7 +99,7 @@ export function WorkoutTodayClient({
   const [hasShownCompletion, setHasShownCompletion] = useState(false);
   const [celebrationIconRunId, setCelebrationIconRunId] = useState<number | null>(null);
   const [showGeneratingLabel, setShowGeneratingLabel] = useState(false);
-  const generatingLabelTimeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const generatingLabelTimeoutRef = useRef<number | null>(null);
   const { push } = useToast();
 
   const stopGeneratingLabel = useCallback(() => {
